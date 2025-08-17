@@ -34,9 +34,12 @@ export function useOllama() {
         const newMemoryService = new MemoryService(api, settings.embeddingModel);
         setMemoryService(newMemoryService);
         newMemoryService.subscribe(() => {
-          setMemories(newMemoryService.getAllMemories());
+          const currentMemories = newMemoryService.getAllMemories();
+          setMemories(currentMemories);
+          console.log(`useOllama: Memories updated via subscription. Total memories: ${currentMemories.length}`);
         });
         console.log('MemoryService initialized successfully with embedding model:', settings.embeddingModel);
+        console.log(`useOllama: Initial memories after service init: ${newMemoryService.getAllMemories().length}`);
       } catch (error) {
         console.error('Failed to initialize MemoryService:', error);
         showToast(`Failed to initialize memory service: ${error.message}`, 'error');
@@ -78,7 +81,7 @@ export function useOllama() {
   }, [checkConnection]);
 
   const generateResponse = useCallback(async (
-    messages: { role: 'user' | 'assistant' | 'system', content: string }[],
+    messages: { role: 'user' | 'assistant' | 'system', content: string, images?: string[] }[],
     onStream?: (chunk: string) => void,
     isDeepThinkingMode?: boolean
   ) => {
@@ -86,9 +89,41 @@ export function useOllama() {
       throw new Error('Ollama is not connected');
     }
 
-    const latestUserMessage = messages[messages.length - 1]?.content || '';
+    let latestUserMessage = messages[messages.length - 1]?.content || '';
+    const lastUserMessageWithImage = messages.findLast(msg => msg.role === 'user' && msg.images && msg.images.length > 0);
+
+    if (lastUserMessageWithImage && api) {
+      setThinkingProcess("Analyzing image with Python service...");
+      try {
+        const response = await fetch('http://localhost:5000/process_image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ image: lastUserMessageWithImage.images[0] }), // Assuming single image for now
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const description = data.description;
+
+        if (description) {
+          latestUserMessage = `Image Description: ${description}\n\nUser Query: ${latestUserMessage}`;
+          setThinkingProcess("Image analysis complete. Generating response...");
+        } else {
+          setThinkingProcess("Could not get image description from Python service. Generating response without image context.");
+        }
+      } catch (imgError) {
+        console.error("Error analyzing image with Python service:", imgError);
+        setThinkingProcess("Failed to analyze image with Python service. Generating response without image context.");
+      }
+    }
 
     setThinkingProcess(null); // Clear previous thinking process
+    let refinedPath = ''; // Declare refinedPath here, initialized to empty string
 
     // Step 0: Retrieve relevant memories for context augmentation
     let contextMemories = '';
@@ -106,28 +141,59 @@ export function useOllama() {
     }
 
     if (isDeepThinkingMode) {
-      // Step 1: Generate thinking process
-      const thinkingPromptMessages = [
-        { role: 'system', content: `You are an AI assistant. Your task is to generate a step-by-step internal thought process for responding to a user query. This thought process should break down the problem, consider multiple options, and weigh pros and cons. Do not provide the final answer, only the reasoning. The user query is: ${latestUserMessage}` },
+      setThinkingProcess("Generating multiple reasoning paths...");
+      // Step 1: Generate multiple reasoning paths
+      const multiPathPromptMessages = [
+        { role: 'system', content: `You are an AI assistant. Your task is to generate 2-3 distinct step-by-step internal thought processes or approaches for responding to a user query. Each approach should be clearly separated and offer a different perspective or method to solve the problem. Do not provide the final answer, only the reasoning paths. The user query is: ${latestUserMessage}` },
         { role: 'user', content: latestUserMessage }
       ];
 
-      const thinkingAbortController = new AbortController();
-      currentAbortController.current = thinkingAbortController; // Store it
+      const multiPathAbortController = new AbortController();
+      currentAbortController.current = multiPathAbortController;
 
+      let rawMultiPaths = '';
       try {
         await api.generateResponse(
-        settings.ollama.model,
-        thinkingPromptMessages,
-        (chunk) => { setThinkingProcess(prev => (prev || '') + chunk); },
-        thinkingAbortController.signal
-      );
+          settings.ollama.model,
+          multiPathPromptMessages,
+          (chunk) => { rawMultiPaths += chunk; setThinkingProcess(prev => (prev || '') + chunk); },
+          multiPathAbortController.signal
+        );
+        setThinkingProcess(rawMultiPaths); // Display all generated paths initially
       } catch (error) {
-        console.error("Error generating thinking process:", error);
-        setThinkingProcess("Could not generate thinking process.");
-        // Continue to generate main response even if thinking fails
+        console.error("Error generating multiple paths:", error);
+        setThinkingProcess("Could not generate multiple reasoning paths.");
+        // Continue to generate main response even if this fails
       } finally {
-        currentAbortController.current = null; // Clear it
+        currentAbortController.current = null;
+      }
+
+      // Step 2: Self-correction/Self-refinement - Evaluate and select the best path
+      if (rawMultiPaths) {
+        setThinkingProcess(prev => (prev || '') + "\n\nEvaluating and refining paths...");
+        const evaluationPromptMessages = [
+          { role: 'system', content: `You have generated several reasoning paths. Your task is to evaluate these paths, identify the most logical, efficient, or accurate one, and refine it if necessary. Provide only the refined, chosen path. If no path is suitable, state that. The original query was: ${latestUserMessage}\n\nGenerated Paths:\n"""\n${rawMultiPaths}\n"""` },
+          { role: 'user', content: `Evaluate the provided reasoning paths and select/refine the best one for the query: ${latestUserMessage}` }
+        ];
+
+        const evaluationAbortController = new AbortController();
+        currentAbortController.current = evaluationAbortController;
+
+        refinedPath = '';
+        try {
+          await api.generateResponse(
+            settings.ollama.model,
+            evaluationPromptMessages,
+            (chunk) => { refinedPath += chunk; setThinkingProcess(prev => (prev || rawMultiPaths) + "\n\nRefined Path:\n" + refinedPath); },
+            evaluationAbortController.signal
+          );
+          setThinkingProcess("Chosen and refined path:\n" + refinedPath); // Display the final refined path
+        } catch (error) {
+          console.error("Error evaluating and refining paths:", error);
+          setThinkingProcess(prev => (prev || rawMultiPaths) + "\n\nCould not evaluate and refine paths. Using initial paths.");
+        } finally {
+          currentAbortController.current = null;
+        }
       }
     }
 
@@ -147,15 +213,21 @@ export function useOllama() {
       systemPromptContent = 'You are a helpful AI assistant.';
     }
 
+    let finalSystemPrompt = systemPromptContent + contextMemories;
+    if (isDeepThinkingMode && refinedPath) {
+      finalSystemPrompt += `\n\nBased on the following refined thought process, formulate your response. Ensure your output is clear, concise, non-repetitive, supported by evidence/examples where appropriate, and ends with a practical conclusion:\n"""\n${refinedPath}\n"""`;
+    }
+
     const mainResponseMessages = [
-      { role: 'system', content: systemPromptContent + contextMemories }, // Use the fetched content + augmented memories
+      { role: 'system', content: finalSystemPrompt }, // Use the fetched content + augmented memories + refined path
       ...messages
-    ];
+    ]
 
     const mainAbortController = new AbortController();
     currentAbortController.current = mainAbortController; // Store it
 
     let finalResponse: OllamaResponse | null = null;
+
     try {
       finalResponse = await api.generateResponse(settings.ollama.model, mainResponseMessages, onStream, mainAbortController.signal);
     } finally {
@@ -250,6 +322,23 @@ export function useOllama() {
     }
   }, [memoryService, showToast]);
 
+  const generateChatName = useCallback(async (userPrompt: string): Promise<string> => {
+    if (!api) {
+      throw new Error('Ollama API not initialized for chat naming.');
+    }
+    const chatNamePrompt = `Generate a very concise (3-5 words) and descriptive name for a chat based on the following user's first message. Do not include any conversational filler, just the name.\n\nUser's first message: """\n${userPrompt}\n"""\n\nChat Name:`;
+    const messages = [{ role: 'user', content: chatNamePrompt }];
+    try {
+      const response = await api.generateResponse(settings.ollama.model, messages);
+      const name = response?.message?.content || response?.response || '';
+      return name.trim().replace(/["'`]/g, ''); // Clean up potential quotes
+    } catch (error) {
+      console.error('Failed to generate chat name:', error);
+      showToast('Failed to generate chat name.', 'error');
+      return 'New Chat'; // Fallback name
+    }
+  }, [api, settings.ollama.model, showToast]);
+
   const deleteMemory = useCallback((id: string) => {
     if (!memoryService) {
       showToast('Memory service not available.', 'error');
@@ -279,5 +368,6 @@ export function useOllama() {
     saveFact, // Expose saveFact
     deleteMemory, // Expose deleteMemory
     memories, // Expose memories
+    generateChatName, // Expose generateChatName
   };
 }

@@ -56,7 +56,11 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
           {attachedFiles.map((file, index) => (
             <div key={index} className="flex items-center glass rounded-2xl px-4 py-3 text-sm transition-glass group">
               <div className="p-1 rounded-full glass-subtle mr-3">
-                <Code size={14} className="text-blue-400" />
+                {file.type.startsWith('image/') ? (
+                  <img src={URL.createObjectURL(file)} alt="preview" className="w-8 h-8 object-cover rounded-full" />
+                ) : (
+                  <Code size={14} className="text-blue-400" />
+                )}
               </div>
               <span className="text-gray-300 font-medium">{file.name}</span>
               <button
@@ -95,7 +99,7 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
             ref={fileInputRef}
             type="file"
             onChange={handleFileSelect}
-            accept=".js,.ts,.jsx,.tsx,.py,.java,.cpp,.c,.h,.css,.html,.json,.xml,.yaml,.yml,.md,.txt"
+            accept="image/*,.js,.ts,.jsx,.tsx,.py,.java,.cpp,.c,.h,.css,.html,.json,.xml,.yaml,.yml,.md,.txt"
             multiple
             className="hidden"
           />

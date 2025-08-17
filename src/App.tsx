@@ -12,6 +12,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useToast } from './hooks/useToast'; // Import useToast
 import { ModeSelector } from './components/chat/ModeSelector';
 import { Toast } from './components/ui/Toast'; // Import Toast component
+import { LandingPage } from './components/chat/LandingPage'; // Import LandingPage
 
 const initialChatSession: ChatSession = {
   id: '1',
@@ -67,12 +68,15 @@ function App() {
     memoryService, // Expose memoryService
     deleteMemory, // Expose deleteMemory
     memories, // Expose memories
+    generateChatName, // Expose generateChatName
   } = useOllama();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
 
   const activeChatSession = chatSessions.find(session => session.id === activeChatSessionId);
   const messages = activeChatSession ? activeChatSession.messages : [];
+
+  const isNewEmptyChat = activeChatSession && activeChatSession.messages.length === 0 && activeChatSession.name === 'New Chat';
 
   useHotkeys('cmd+k', () => {
     if (activeChatSession) {
@@ -167,14 +171,54 @@ function App() {
     }
 
     let fullPrompt = content;
+    const imageFiles: File[] = [];
+    const textFiles: File[] = [];
+
     if (attachedFiles && attachedFiles.length > 0) {
+      attachedFiles.forEach(file => {
+        if (file.type.startsWith('image/')) {
+          imageFiles.push(file);
+        } else {
+          textFiles.push(file);
+        }
+      });
+
       const fileContents = await Promise.all(
-        attachedFiles.map(async (file) => {
+        textFiles.map(async (file) => {
           const text = await file.text();
           return `\n\n--- File: ${file.name} ---\n${text}`;
         })
       );
       fullPrompt += fileContents.join('');
+    }
+
+    // Convert image files to base64
+    const imageBase64s: string[] = await Promise.all(
+      imageFiles.map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result as string); // Get full Data URL
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      })
+    );
+
+    // AI names the chat on first prompt
+    if (isNewEmptyChat && activeChatSession) {
+      try {
+        const newChatName = await generateChatName(fullPrompt);
+        if (newChatName) {
+          setChatSessions(prevSessions => prevSessions.map(session => 
+            session.id === activeChatSession.id ? { ...session, name: newChatName } : session
+          ));
+        }
+      } catch (error) {
+        console.error('Failed to generate chat name:', error);
+        showToast('Failed to generate chat name.', 'error');
+      }
     }
 
     const userMessage: Message = {
@@ -183,6 +227,7 @@ function App() {
       role: 'user',
       timestamp: new Date(),
       type: 'text',
+      images: imageBase64s.length > 0 ? imageBase64s : undefined, // Add images to message
     };
 
     const assistantMessageId = (Date.now() + 1).toString();
@@ -212,6 +257,7 @@ function App() {
     ].map(msg => ({
       role: msg.role,
       content: String(msg.content), // Explicitly convert to string
+      images: msg.images, // Pass images from message
     }));
     console.log('Sending message to AI:', conversationMessages);
 
@@ -370,17 +416,21 @@ function App() {
 
         <main className="flex-1 flex flex-col relative">
           <div className="flex-1 overflow-auto">
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                showLineNumbers={settings.showLineNumbers}
-                isLatestMessage={index === messages.length - 1}
-                thinkingProcess={mode === 'deep' && message.role === 'assistant' && index === messages.length - 1 ? thinkingProcess : null}
-              />
-            ))}
+            {isNewEmptyChat ? (
+              <LandingPage onNewChat={handleNewChat} />
+            ) : (
+              messages.map((message, index) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  showLineNumbers={settings.showLineNumbers}
+                  isLatestMessage={index === messages.length - 1}
+                  thinkingProcess={mode === 'deep' && message.role === 'assistant' && index === messages.length - 1 ? thinkingProcess : null}
+                />
+              ))
+            )}
             
-            {isLoading && (
+            {isLoading && !isNewEmptyChat && (
               <div className="flex items-center justify-center p-8">
                 <div className="flex items-center space-x-3 glass px-6 py-3 rounded-2xl">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-400/30 border-t-blue-400"></div>

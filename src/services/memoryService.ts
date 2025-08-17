@@ -50,6 +50,7 @@ export class MemoryService {
       const storedMemories = localStorage.getItem(this.STORAGE_KEY);
       if (storedMemories) {
         this.memories = JSON.parse(storedMemories);
+        console.log(`MemoryService: Loaded ${this.memories.length} memories from localStorage.`);
       }
     } catch (error) {
       console.error('Failed to load memories from localStorage:', error);
@@ -61,6 +62,7 @@ export class MemoryService {
   private saveMemories() {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.memories));
+      console.log(`MemoryService: Saved ${this.memories.length} memories to localStorage.`);
     } catch (error) {
       console.error('Failed to save memories to localStorage:', error);
     }
@@ -71,6 +73,7 @@ export class MemoryService {
     if (!content.trim()) return null;
 
     try {
+      console.log(`MemoryService: Attempting to add memory (type: ${type}, content: "${content.substring(0, 50)}...")`);
       const embedding = await this.ollamaApi.generateEmbedding(content, this.embeddingModel);
       const newMemory: Memory = {
         id: uuidv4(),
@@ -81,6 +84,7 @@ export class MemoryService {
       };
       this.memories.push(newMemory);
       this.saveMemories();
+      console.log(`MemoryService: Successfully added memory. Total memories: ${this.memories.length}`);
       return newMemory;
     } catch (error) {
       console.error(`Failed to add memory for content: "${content}" with model "${this.embeddingModel}":`, error);

@@ -96,7 +96,11 @@ export function ChatHistory({ sessions, activeSessionId, onSessionSelect, onNewC
                 <p className="text-base font-medium truncate">{session.name}</p>
               )}
               <p className="text-xs text-gray-500 truncate mt-1 font-normal">
-                {session.messages.length > 0 ? session.messages[session.messages.length - 1].content : 'New Chat'}
+                {session.messages.length > 0 
+                  ? (session.messages[session.messages.length - 1].content.length > 15 
+                    ? session.messages[session.messages.length - 1].content.substring(0, 15) + '...' 
+                    : session.messages[session.messages.length - 1].content)
+                  : 'New Chat'}
               </p>
             </div>
           </div>

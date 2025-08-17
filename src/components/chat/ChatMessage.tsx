@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Message } from '../../types';
 import { CodeBlock } from '../code/CodeBlock';
-import { User, Bot, Copy, Check } from 'lucide-react';
+import { User, Bot, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { AnimatedTextMessage } from './AnimatedTextMessage';
 import { useClipboard } from '../../hooks/useClipboard';
+import { parseMessageContent, MessageSegment } from '../../utils/markdownParser';
 
 interface ChatMessageProps {
   message: Message;
@@ -15,8 +16,10 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkingProcess }: ChatMessageProps) {
   const { copied, copyToClipboard } = useClipboard();
+  const [showThinkingProcess, setShowThinkingProcess] = useState(false); // State for toggling thinking process
 
   const isUser = message.role === 'user';
+  const messageSegments = parseMessageContent(message.content);
 
   return (
     <div className={clsx(
@@ -48,21 +51,58 @@ export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkin
         {/* Thinking Process Display */}
         {thinkingProcess && !isUser && (
           <div className="mb-4 glass-subtle rounded-2xl p-4 border border-purple-400/20">
-            <div className="flex items-center mb-2">
-              <div className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></div>
-              <span className="text-xs font-medium text-purple-300 uppercase tracking-wide">Thinking Process</span>
+            <div className="flex items-center mb-2 justify-between">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></div>
+                <span className="text-xs font-medium text-purple-300 uppercase tracking-wide">Thinking Process</span>
+              </div>
+              <button 
+                onClick={() => setShowThinkingProcess(!showThinkingProcess)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                {showThinkingProcess ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
             </div>
-            <div className="text-sm text-gray-300 whitespace-pre-wrap font-normal leading-relaxed">
-              {thinkingProcess}
-            </div>
+            {showThinkingProcess && (
+              <div className="text-sm text-gray-300 whitespace-pre-wrap font-normal leading-relaxed">
+                {thinkingProcess}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Image Display */}
+        {message.images && message.images.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {message.images.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Attached image ${index + 1}`}
+                className="max-w-full h-auto rounded-lg shadow-md"
+                style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
+              />
+            ))}
           </div>
         )}
         
         <div className="prose prose-invert max-w-none text-gray-200">
-          <AnimatedTextMessage 
-            text={message.content} 
-            isLatestMessage={isLatestMessage}
-          />
+          {messageSegments.map((segment, index) => (
+            segment.type === 'text' ? (
+              <AnimatedTextMessage 
+                key={index} 
+                text={segment.content} 
+                isLatestMessage={isLatestMessage && index === messageSegments.length - 1 && segment.type === 'text'}
+              />
+            ) : (
+              <CodeBlock 
+                key={index} 
+                code={segment.content} 
+                language={segment.lang || 'plaintext'} 
+                showLineNumbers={showLineNumbers}
+              />
+            )
+          ))}
         </div>
         
         <div className="flex justify-end mt-4">

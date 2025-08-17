@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prestart-all": "pip install -r python_service/requirements.txt",
+    "start-all": "python python_service/app.py & npm run dev"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -41,6 +43,7 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.19"
+    "vite": "^5.4.19",
+    "concurrently": "^8.2.2"
   }
 }

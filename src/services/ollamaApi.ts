@@ -67,7 +67,7 @@ export class OllamaAPI {
 
   async generateResponse(
     model: string,
-    messages: { role: 'user' | 'assistant', content: string }[],
+    messages: { role: 'user' | 'assistant' | 'system', content: string, images?: string[] }[],
     onStream?: (chunk: string) => void,
     signal?: AbortSignal
   ): Promise<OllamaResponse> {
@@ -80,7 +80,11 @@ export class OllamaAPI {
         },
         body: JSON.stringify({
           model,
-          messages,
+          messages: messages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+            ...(msg.images && { images: msg.images }), // Conditionally add images
+          })),
           stream: !!onStream,
         }),
         signal, // Pass the AbortSignal here

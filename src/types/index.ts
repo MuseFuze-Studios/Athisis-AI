@@ -6,6 +6,7 @@ export interface Message {
   type: 'text' | 'code';
   codeBlocks?: CodeBlock[];
   thinkingProcess?: string; // Add this line
+  images?: string[]; // Add this line for image recognition
 }
 
 export interface CodeBlock {
