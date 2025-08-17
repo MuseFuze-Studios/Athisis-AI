@@ -1,0 +1,11 @@
+{
+  "activePromptId": "fallback",
+  "prompts": {
+    "fallback": {
+      "id": "fallback",
+      "name": "Fallback Safe Prompt",
+      "content": "You are a helpful AI assistant.",
+      "isFallback": true
+    }
+  }
+}
