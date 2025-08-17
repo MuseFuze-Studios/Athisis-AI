@@ -51,24 +51,36 @@ export function ChatHistory({ sessions, activeSessionId, onSessionSelect, onNewC
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-gray-800 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white">Chats</h2>
-        <button onClick={onNewChat} className="text-gray-400 hover:text-blue-400 transition-colors p-2 rounded-full hover:bg-gray-800">
-          <PlusCircle size={22} />
+      <div className="p-6 border-b border-white/10 flex items-center justify-between relative z-10">
+        <h2 className="text-xl font-semibold text-white tracking-tight">Conversations</h2>
+        <button 
+          onClick={onNewChat} 
+          className="glass glass-hover transition-glass p-3 rounded-full text-gray-300 hover:text-blue-400 group"
+        >
+          <PlusCircle size={20} className="group-hover:rotate-90 transition-transform duration-300" />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto py-2">
+      <div className="flex-1 overflow-y-auto py-4 px-3 relative z-10">
         {sessions.map(session => (
           <div
             key={session.id}
             onClick={() => onSessionSelect(session.id)}
             onContextMenu={(e) => handleContextMenu(e, session.id)}
             className={clsx(
-              'flex items-center p-4 mx-2 rounded-lg cursor-pointer transition-colors duration-200',
-              session.id === activeSessionId ? 'bg-blue-600/20 text-blue-200' : 'hover:bg-gray-800 text-gray-300'
+              'flex items-center p-4 mb-2 rounded-2xl cursor-pointer transition-glass message-enter group',
+              session.id === activeSessionId 
+                ? 'glass-strong glow-primary text-blue-200 border-blue-400/20' 
+                : 'glass-subtle glass-hover text-gray-300'
             )}
           >
-            <MessageSquare size={18} className={clsx('mr-3', session.id === activeSessionId ? 'text-blue-400' : 'text-gray-500')} />
+            <div className={clsx(
+              'p-2 rounded-full mr-4 transition-glass',
+              session.id === activeSessionId ? 'glass glow-primary' : 'glass-subtle'
+            )}>
+              <MessageSquare size={16} className={clsx(
+                session.id === activeSessionId ? 'text-blue-400' : 'text-gray-400 group-hover:text-gray-300'
+              )} />
+            </div>
             <div className="flex-1">
               {editingSessionId === session.id ? (
                 <input
@@ -77,13 +89,13 @@ export function ChatHistory({ sessions, activeSessionId, onSessionSelect, onNewC
                   onChange={(e) => setNewSessionName(e.target.value)}
                   onBlur={() => handleRenameSubmit(session.id)}
                   onKeyDown={(e) => handleRenameKeyDown(e, session.id)}
-                  className="w-full bg-gray-700 text-white text-base font-medium p-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full glass text-white text-base font-medium p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 border-0"
                   autoFocus
                 />
               ) : (
-                <p className="text-base font-semibold truncate">{session.name}</p>
+                <p className="text-base font-medium truncate">{session.name}</p>
               )}
-              <p className="text-xs text-gray-400 truncate mt-1">
+              <p className="text-xs text-gray-500 truncate mt-1 font-normal">
                 {session.messages.length > 0 ? session.messages[session.messages.length - 1].content : 'New Chat'}
               </p>
             </div>
@@ -93,23 +105,23 @@ export function ChatHistory({ sessions, activeSessionId, onSessionSelect, onNewC
 
       {contextMenu && (
         <div
-          className="fixed inset-0 z-50"
+          className="fixed inset-0 z-[100]"
           onClick={handleCloseContextMenu}
           onContextMenu={handleCloseContextMenu}
         >
           <div
-            className="absolute bg-gray-700 rounded-lg shadow-xl py-1 z-50"
+            className="absolute glass-strong rounded-2xl shadow-2xl py-2 z-[101] min-w-[120px]"
             style={{ top: contextMenu.y, left: contextMenu.x }}
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-600 rounded-md"
+              className="block w-full text-left px-4 py-3 text-sm text-white hover:bg-white/10 transition-colors font-medium"
               onClick={() => handleRenameClick(contextMenu.sessionId, sessions.find(s => s.id === contextMenu.sessionId)?.name || '')}
             >
               Rename
             </button>
             <button
-              className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500 hover:text-white rounded-md"
+              className="block w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors font-medium"
               onClick={() => {
                 onDeleteChat(contextMenu.sessionId);
                 handleCloseContextMenu();

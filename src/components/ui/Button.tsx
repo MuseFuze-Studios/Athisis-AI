@@ -20,26 +20,26 @@ export function Button({
   return (
     <button
       className={clsx(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900',
+        'inline-flex items-center justify-center rounded-2xl font-medium transition-glass',
+        'focus:outline-none focus:ring-2 focus:ring-blue-500/50',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         {
-          'bg-blue-600 hover:bg-blue-500 text-white shadow-lg hover:shadow-xl': variant === 'primary',
-          'bg-gray-700 hover:bg-gray-600 text-gray-100 border border-gray-600': variant === 'secondary',
-          'hover:bg-gray-800 text-gray-300 hover:text-white': variant === 'ghost',
-          'bg-red-600 hover:bg-red-500 text-white': variant === 'danger',
+          'glass-strong glow-primary text-white hover:glow-primary': variant === 'primary',
+          'glass glass-hover text-gray-100': variant === 'secondary',
+          'glass-hover text-gray-300 hover:text-white': variant === 'ghost',
+          'glass-strong bg-red-600/20 border-red-500/30 text-red-300 hover:bg-red-500/30': variant === 'danger',
         },
         {
-          'px-3 py-1.5 text-sm': size === 'sm',
-          'px-4 py-2 text-sm': size === 'md',
-          'px-6 py-3 text-base': size === 'lg',
+          'px-4 py-2 text-sm': size === 'sm',
+          'px-5 py-3 text-sm': size === 'md',
+          'px-7 py-4 text-base': size === 'lg',
         },
         className
       )}
       disabled={disabled}
       {...props}
     >
-      {icon && <span className="mr-2">{icon}</span>}
+      {icon && <span className={children ? "mr-2" : ""}>{icon}</span>}
       {children}
     </button>
   );

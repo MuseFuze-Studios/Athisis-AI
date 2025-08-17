@@ -27,7 +27,10 @@ export function Sidebar({
   if (!isOpen) return null;
 
   return (
-    <div className="w-80 bg-gray-900/70 border-r border-gray-800 h-full flex flex-col backdrop-blur-md">
+    <div className="w-80 glass-strong border-r border-white/10 h-full flex flex-col relative">
+      {/* Subtle gradient overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/5 pointer-events-none rounded-l-2xl"></div>
+      
       <ChatHistory 
         sessions={sessions}
         activeSessionId={activeSessionId}
@@ -36,12 +39,12 @@ export function Sidebar({
         onDeleteChat={onDeleteChat}
         onRenameChat={onRenameChat}
       />
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-6 border-t border-white/10 relative z-10">
         <button 
           onClick={onOpenSettings}
-          className="w-full flex items-center justify-center px-4 py-3 text-base font-medium transition-colors bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300"
+          className="w-full flex items-center justify-center px-6 py-4 text-base font-medium glass glass-hover transition-glass rounded-2xl text-gray-200 group"
         >
-          <Settings size={18} className="mr-2" />
+          <Settings size={18} className="mr-3 group-hover:rotate-90 transition-transform duration-300" />
           Settings
         </button>
       </div>

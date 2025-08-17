@@ -7,11 +7,13 @@ interface ModeSelectorProps {
 
 export function ModeSelector({ selectedMode, onModeChange }: ModeSelectorProps) {
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-2 glass rounded-2xl p-1">
       <button
         onClick={() => onModeChange('basic')}
         className={`px-3 py-1 text-sm rounded-md ${
-          selectedMode === 'basic' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
+          selectedMode === 'basic' 
+            ? 'glass-strong glow-primary text-white font-medium' 
+            : 'text-gray-400 hover:text-gray-300 font-medium'
         }`}
       >
         Athisis Basic
@@ -19,7 +21,9 @@ export function ModeSelector({ selectedMode, onModeChange }: ModeSelectorProps) 
       <button
         onClick={() => onModeChange('deep')}
         className={`px-3 py-1 text-sm rounded-md ${
-          selectedMode === 'deep' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
+          selectedMode === 'deep' 
+            ? 'glass-strong glow-secondary text-white font-medium' 
+            : 'text-gray-400 hover:text-gray-300 font-medium'
         }`}
       >
         Athisis Deep Thinking

@@ -289,36 +289,45 @@ function App() {
   };
 
   return (
-    <div className="h-screen bg-gray-950 text-gray-100 flex flex-col">
+    <div className="h-screen text-gray-100 flex flex-col relative overflow-hidden">
+      {/* Ambient background elements for glassmorphism depth */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/8 rounded-full blur-3xl"></div>
+        <div className="absolute top-2/3 left-1/2 w-64 h-64 bg-emerald-500/6 rounded-full blur-3xl"></div>
+      </div>
+
       {!focusMode && (
-        <header className="bg-gray-900 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+        <header className="glass border-b border-white/10 px-6 py-4 flex items-center justify-between relative z-10 transition-glass">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="sm"
               icon={<Menu size={20} />}
               onClick={() => setSidebarOpen(prev => !prev)}
-              className="rounded-full"
+              className="rounded-full glass-hover transition-glass"
             />
             <div className="flex items-center space-x-3">
-              <Bot size={24} className="text-blue-400" />
-              <h1 className="text-xl font-bold text-white">Athisis.AI</h1>
+              <div className="p-2 rounded-full glass glow-primary">
+                <Bot size={20} className="text-blue-400" />
+              </div>
+              <h1 className="text-xl font-semibold text-white tracking-tight">Athisis.AI</h1>
               {isConnected ? (
                 <div className="flex items-center space-x-1">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  <span className="text-sm text-green-300 bg-green-600/20 px-2 py-0.5 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50"></span>
+                  <span className="text-sm text-emerald-300 glass-subtle px-3 py-1 rounded-full font-medium">
                     Connected
                   </span>
                   {settings.ollama.model && (
-                    <span className="text-sm text-gray-300 bg-gray-700 px-2 py-0.5 rounded-full">
+                    <span className="text-sm text-gray-300 glass px-3 py-1 rounded-full font-medium">
                       {settings.ollama.model}
                     </span>
                   )}
                 </div>
               ) : (
                 <div className="flex items-center space-x-1">
-                  <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                  <span className="text-sm text-red-300 bg-red-600/20 px-2 py-0.5 rounded-full">
+                  <span className="w-2 h-2 rounded-full bg-red-400 shadow-lg shadow-red-400/50"></span>
+                  <span className="text-sm text-red-300 glass-subtle px-3 py-1 rounded-full font-medium">
                     Disconnected
                   </span>
                 </div>
@@ -334,20 +343,20 @@ function App() {
               icon={<Minimize2 size={20} />}
               onClick={() => setFocusMode(true)}
               title="Focus Mode (Esc)"
-              className="rounded-full"
+              className="rounded-full glass-hover transition-glass"
             />
             <Button
               variant="ghost"
               size="sm"
               icon={<Settings size={20} />}
               onClick={() => setSettingsOpen(true)}
-              className="rounded-full"
+              className="rounded-full glass-hover transition-glass"
             />
           </div>
         </header>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative z-10">
         <Sidebar
           isOpen={sidebarOpen && !focusMode}
           sessions={chatSessions}
@@ -359,7 +368,7 @@ function App() {
           onRenameChat={handleRenameChatSession}
         />
 
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col relative">
           <div className="flex-1 overflow-auto">
             {messages.map((message, index) => (
               <ChatMessage
@@ -372,17 +381,17 @@ function App() {
             ))}
             
             {isLoading && (
-              <div className="flex items-center justify-center p-6">
-                <div className="flex items-center space-x-2 text-gray-400">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
-                  <span>Generating...</span>
+              <div className="flex items-center justify-center p-8">
+                <div className="flex items-center space-x-3 glass px-6 py-3 rounded-2xl">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-400/30 border-t-blue-400"></div>
+                  <span className="text-gray-300 font-medium">Generating response...</span>
                   <Button 
                     variant="ghost"
                     size="sm"
                     icon={<StopCircle size={16} />}
                     onClick={abortGeneration}
                     title="Stop Generation"
-                    className="text-red-400 hover:text-red-300"
+                    className="text-red-400 hover:text-red-300 glass-hover transition-glass rounded-full"
                   />
                 </div>
               </div>
@@ -391,21 +400,24 @@ function App() {
             <div ref={messagesEndRef} />
           </div>
 
-          
-
-          <ChatInput
-            onSendMessage={handleSendMessage}
-            disabled={isLoading}
-          />
+          <div className="p-6 glass-strong border-t border-white/10">
+            <div className="max-w-4xl mx-auto">
+              <ChatInput
+                onSendMessage={handleSendMessage}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
         </main>
       </div>
 
       {focusMode && (
-        <div className="fixed top-4 right-4 z-10">
+        <div className="fixed top-6 right-6 z-50">
           <Button
-            variant="secondary"
+            variant="ghost"
             size="sm"
             onClick={() => setFocusMode(false)}
+            className="glass glow-primary rounded-full px-4 py-2 font-medium transition-glass"
           >
             Exit Focus Mode
           </Button>

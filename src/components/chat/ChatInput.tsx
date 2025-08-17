@@ -52,14 +52,16 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
     <>
       {/* Attached Files */}
       {attachedFiles.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-6 flex flex-wrap gap-3">
           {attachedFiles.map((file, index) => (
-            <div key={index} className="flex items-center bg-gray-800 rounded-full px-4 py-2 text-sm border border-gray-700">
-              <Code size={16} className="mr-2 text-blue-400" />
-              <span className="text-gray-300">{file.name}</span>
+            <div key={index} className="flex items-center glass rounded-2xl px-4 py-3 text-sm transition-glass group">
+              <div className="p-1 rounded-full glass-subtle mr-3">
+                <Code size={14} className="text-blue-400" />
+              </div>
+              <span className="text-gray-300 font-medium">{file.name}</span>
               <button
                 onClick={() => removeFile(index)}
-                className="ml-2 text-gray-500 hover:text-gray-300"
+                className="ml-3 text-gray-500 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-red-500/20"
               >
                 ×
               </button>
@@ -68,8 +70,8 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex items-end gap-4">
-        <div className="flex-1">
+      <form onSubmit={handleSubmit} className="flex items-end gap-4 float-up">
+        <div className="flex-1 relative">
           <textarea
             key="chat-input-textarea"
             ref={textareaRef}
@@ -78,17 +80,17 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
             onKeyDown={handleKeyDown}
             placeholder={disabled ? "AI is thinking..." : "Ask Athisis.AI about your code..."}
             className={clsx(
-              'w-full px-5 py-4 bg-gray-800 border border-gray-700 rounded-2xl',
-              'text-gray-100 placeholder-gray-500 resize-none',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-              'transition-colors duration-200 min-h-[56px] max-h-40 overflow-y-auto'
+              'w-full px-6 py-5 glass border-0 rounded-3xl',
+              'text-gray-100 placeholder-gray-400 resize-none font-medium',
+              'focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:glow-primary',
+              'transition-glass min-h-[64px] max-h-40 overflow-y-auto text-base leading-relaxed'
             )}
             disabled={disabled}
             rows={1}
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -101,25 +103,31 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
           <Button
             type="button"
             variant="ghost"
-            size="lg"
+            size="md"
             icon={<Paperclip size={22} />}
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled}
-            className="rounded-full text-gray-400 hover:text-white"
+            className="glass glass-hover transition-glass rounded-2xl p-4 text-gray-400 hover:text-white group"
           />
           
           <Button
             type="submit"
             disabled={disabled || (!input.trim() && attachedFiles.length === 0)}
-            size="lg"
-            icon={disabled ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div> : <Send size={22} />}
-            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+            size="md"
+            icon={disabled ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+            ) : (
+              <Send size={20} className="group-hover:translate-x-0.5 transition-transform" />
+            )}
+            className="glass-strong glow-primary transition-glass rounded-2xl px-6 py-4 text-white font-medium group hover:glow-primary"
           />
         </div>
       </form>
 
-      <div className="mt-3 text-xs text-gray-500 text-center">
-        Press Enter to send • Shift+Enter for new line • Attach files for context
+      <div className="mt-4 text-xs text-gray-500 text-center font-normal">
+        <span className="glass-subtle px-3 py-1 rounded-full">
+          Press Enter to send • Shift+Enter for new line • Attach files for context
+        </span>
       </div>
     </>
   );
