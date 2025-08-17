@@ -72,9 +72,13 @@ export class MemoryService {
   async addMemory(content: string, type: 'user' | 'assistant'): Promise<Memory | null> {
     if (!content.trim()) return null;
 
+    console.log(`MemoryService: addMemory called with content: "${content.substring(0, 50)}..." and type: ${type}`);
+
     try {
-      console.log(`MemoryService: Attempting to add memory (type: ${type}, content: "${content.substring(0, 50)}...")`);
+      console.log(`MemoryService: Attempting to generate embedding for content: "${content.substring(0, 50)}..." using model: ${this.embeddingModel}`);
       const embedding = await this.ollamaApi.generateEmbedding(content, this.embeddingModel);
+      console.log(`MemoryService: Embedding generated successfully. Length: ${embedding.length}`);
+
       const newMemory: Memory = {
         id: uuidv4(),
         content,
@@ -83,11 +87,12 @@ export class MemoryService {
         type,
       };
       this.memories.push(newMemory);
+      console.log(`MemoryService: Memory added to internal array. Current count: ${this.memories.length}`);
       this.saveMemories();
-      console.log(`MemoryService: Successfully added memory. Total memories: ${this.memories.length}`);
+      console.log(`MemoryService: Successfully added and saved memory. Total memories: ${this.memories.length}`);
       return newMemory;
     } catch (error) {
-      console.error(`Failed to add memory for content: "${content}" with model "${this.embeddingModel}":`, error);
+      console.error(`MemoryService: Failed to add memory for content: "${content}" with model "${this.embeddingModel}":`, error);
       throw error; // Re-throw the error for further handling upstream
     }
   }
@@ -116,6 +121,7 @@ export class MemoryService {
 
   getAllMemories(): Memory[] {
     // Return a copy to prevent external modification
+    console.log(`MemoryService: getAllMemories() called. Returning ${this.memories.length} memories.`, this.memories);
     return [...this.memories];
   }
 
@@ -135,4 +141,4 @@ export class MemoryService {
 // For a more robust solution, pass OllamaAPI and embeddingModel from a central place (e.g., App.tsx)
 // For now, we'll assume the default OllamaAPI instance is sufficient.
 // This will be properly initialized in useOllama hook.
-// export const memoryService = new MemoryService(new OllamaAPI(), 'nomic-embed-text');
+export const memoryService = new MemoryService(new OllamaAPI(), 'nomic-embed-text');

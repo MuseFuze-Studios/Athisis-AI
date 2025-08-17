@@ -10,6 +10,7 @@ import { useSettings } from './hooks/useSettings';
 import { useOllama } from './hooks/useOllama';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useToast } from './hooks/useToast'; // Import useToast
+import { useClipboard } from './hooks/useClipboard'; // Import useClipboard
 import { ModeSelector } from './components/chat/ModeSelector';
 import { Toast } from './components/ui/Toast'; // Import Toast component
 import { LandingPage } from './components/chat/LandingPage'; // Import LandingPage
@@ -72,6 +73,7 @@ function App() {
   } = useOllama();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
+  const { history: clipboardItems, copyToClipboard } = useClipboard(); // Initialize useClipboard // Initialize useToast
 
   const activeChatSession = chatSessions.find(session => session.id === activeChatSessionId);
   const messages = activeChatSession ? activeChatSession.messages : [];
@@ -139,6 +141,16 @@ function App() {
 
   const handleSendMessage = async (content: string, attachedFiles?: File[]) => {
     // Check if the message is a command to save a fact
+    const saveFact = async (fact: string) => {
+      try {
+        await memoryService.addMemory(fact, 'user');
+        showToast('Fact saved to memories!', 'success');
+      } catch (error) {
+        console.error('Failed to save fact:', error);
+        showToast('Failed to save fact.', 'error');
+      }
+    };
+
     if (content.toLowerCase().startsWith('remember that ')) {
       const factToSave = content.substring('remember that '.length).trim();
       if (factToSave) {
@@ -412,6 +424,7 @@ function App() {
           onOpenSettings={() => setSettingsOpen(true)}
           onDeleteChat={handleDeleteChatSession}
           onRenameChat={handleRenameChatSession}
+          clipboardItems={clipboardItems}
         />
 
         <main className="flex-1 flex flex-col relative">

@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "prestart-all": "pip install -r python_service/requirements.txt",
-    "start-all": "python python_service/app.py & npm run dev"
+    "start-all": "concurrently \"node server.cjs\" \"python python_service/app.py\" \"npm run dev\""
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

@@ -33,6 +33,7 @@ export function useOllama() {
       try {
         const newMemoryService = new MemoryService(api, settings.embeddingModel);
         setMemoryService(newMemoryService);
+        setMemories(newMemoryService.getAllMemories()); // Initialize memories state immediately with current memories
         newMemoryService.subscribe(() => {
           const currentMemories = newMemoryService.getAllMemories();
           setMemories(currentMemories);
@@ -97,14 +98,12 @@ export function useOllama() {
       try {
         // Get the first image and ensure it has the data URL prefix
         const imageData = lastUserMessageWithImage.images[0];
-        const imageWithPrefix = imageData.startsWith('data:') ? imageData : `data:image/jpeg;base64,${imageData}`;
-        
         const response = await fetch('http://localhost:5000/process_image', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ image: imageWithPrefix }), // Send with proper data URL format
+          body: JSON.stringify({ image: imageData }), // Send the raw imageData
         });
 
         if (!response.ok) {
@@ -185,10 +184,21 @@ export function useOllama() {
 
         refinedPath = '';
         try {
+          let hasRefinedPathHeaderBeenAdded = false;
           await api.generateResponse(
             settings.ollama.model,
             evaluationPromptMessages,
-            (chunk) => { refinedPath += chunk; setThinkingProcess(prev => (prev || rawMultiPaths) + "\n\nRefined Path:\n" + refinedPath); },
+            (chunk) => {
+              refinedPath += chunk;
+              setThinkingProcess(prev => {
+                let newThinkingProcess = prev || rawMultiPaths;
+                if (!hasRefinedPathHeaderBeenAdded) {
+                  newThinkingProcess += "\n\nRefined Path:\n";
+                  hasRefenedPathHeaderBeenAdded = true;
+                }
+                return newThinkingProcess + chunk;
+              });
+            },
             evaluationAbortController.signal
           );
           setThinkingProcess("Chosen and refined path:\n" + refinedPath); // Display the final refined path
@@ -318,8 +328,15 @@ export function useOllama() {
       return;
     }
     try {
-      await memoryService.addMemory(fact, 'user');
-      showToast('Fact saved to memory!', 'success');
+      console.log(`useOllama: saveFact called with fact: "${fact}"`);
+      const addedMemory = await memoryService.addMemory(fact, 'user');
+      if (addedMemory) {
+        showToast('Fact saved to memory!', 'success');
+        console.log('useOllama: Fact successfully added to memoryService.', addedMemory);
+      } else {
+        showToast('Failed to save fact to memory: No memory returned.', 'error');
+        console.error('useOllama: memoryService.addMemory returned null.');
+      }
     } catch (error) {
       console.error('Failed to save fact:', error);
       showToast('Failed to save fact to memory.', 'error');

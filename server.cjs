@@ -46,6 +46,11 @@ const writePrompts = (data) => {
 
 // API Endpoints
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).send('Server is healthy');
+});
+
 // GET all prompts
 app.get('/api/prompts', (req, res) => {
     const { prompts } = readPrompts();
@@ -148,4 +153,6 @@ app.listen(PORT, () => {
     console.log(`Prompt Manager API running on http://localhost:${PORT}`);
     // Ensure prompts.json exists and is initialized
     readPrompts();
+}).on('error', (err) => {
+    console.error('Failed to start server:', err);
 });
