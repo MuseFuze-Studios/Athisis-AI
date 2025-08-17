@@ -95,12 +95,16 @@ export function useOllama() {
     if (lastUserMessageWithImage && api) {
       setThinkingProcess("Analyzing image with Python service...");
       try {
+        // Get the first image and ensure it has the data URL prefix
+        const imageData = lastUserMessageWithImage.images[0];
+        const imageWithPrefix = imageData.startsWith('data:') ? imageData : `data:image/jpeg;base64,${imageData}`;
+        
         const response = await fetch('http://localhost:5000/process_image', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ image: lastUserMessageWithImage.images[0] }), // Assuming single image for now
+          body: JSON.stringify({ image: imageWithPrefix }), // Send with proper data URL format
         });
 
         if (!response.ok) {

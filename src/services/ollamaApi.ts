@@ -83,7 +83,16 @@ export class OllamaAPI {
           messages: messages.map(msg => ({
             role: msg.role,
             content: msg.content,
-            ...(msg.images && { images: msg.images }), // Conditionally add images
+            ...(msg.images && { 
+              images: msg.images.map(img => {
+                // If it's already a data URL, extract base64 part
+                if (img.startsWith('data:')) {
+                  return img.split(',')[1];
+                }
+                // If it's already base64, use as is
+                return img;
+              })
+            }), // Conditionally add images with proper base64 format
           })),
           stream: !!onStream,
         }),

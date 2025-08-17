@@ -227,7 +227,7 @@ function App() {
       role: 'user',
       timestamp: new Date(),
       type: 'text',
-      images: imageBase64s.length > 0 ? imageBase64s : undefined, // Add images to message
+      images: imageBase64s.length > 0 ? imageBase64s.map(base64 => `data:image/jpeg;base64,${base64}`) : undefined, // Add images to message with proper data URL format
     };
 
     const assistantMessageId = (Date.now() + 1).toString();
