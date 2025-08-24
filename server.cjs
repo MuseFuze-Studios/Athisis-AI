@@ -23,7 +23,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
 
 // Handle preflight requests for the Ollama proxy
 app.options('/ollama-api/*', cors());
@@ -39,11 +38,20 @@ app.use('/ollama-api', createProxyMiddleware({
     // Optional: Log proxy requests for debugging
     console.log(`[Proxy] ${req.method} ${req.url} -> ${proxyReq.baseUrl || ''}${proxyReq.path}`);
   },
+  onProxyRes: (proxyRes, req, res) => {
+    // Ensure CORS headers are present on proxied responses
+    proxyRes.headers['Access-Control-Allow-Origin'] = req.headers.origin || '*';
+    proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+  },
   onError: (err, req, res) => {
     console.error('[Proxy Error]:', err);
     res.status(500).json({ error: 'Proxy error', details: err.message });
   }
 }));
+
+
+// JSON body parser for application endpoints (placed after proxy to avoid interfering with proxied requests)
+app.use(express.json());
 
 const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
 
