@@ -49,6 +49,7 @@ app.use('/ollama-api', createProxyMiddleware({
   }
 }));
 
+
 // JSON body parser for application endpoints (placed after proxy to avoid interfering with proxied requests)
 app.use(express.json());
 
