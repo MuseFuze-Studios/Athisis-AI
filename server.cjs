@@ -8,6 +8,26 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const PORT = 3001; // Choose a port different from React app's default (3000)
 
+// Middleware (placed before proxy to handle CORS and preflight requests)
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://149.88.113.223:3000',
+    'http://192.168.1.173:5173', // Added for local network access
+    'http://192.168.1.173:3000', // Added for local network access
+    'http://149.88.113.223:3000' // Added for public IP access
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
+
+// Handle preflight requests for the Ollama proxy
+app.options('/ollama-api/*', cors());
+
 // Proxy Ollama API requests
 app.use('/ollama-api', createProxyMiddleware({
   target: 'http://localhost:11434/api', // Forward into Ollama's /api namespace
@@ -26,23 +46,6 @@ app.use('/ollama-api', createProxyMiddleware({
 }));
 
 const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
-
-// Middleware
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-    'http://149.88.113.223:3000',
-    'http://192.168.1.173:5173', // Added for local network access
-    'http://192.168.1.173:3000', // Added for local network access
-    'http://149.88.113.223:3000' // Added for public IP access
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.use(express.json());
 
 // Helper to read prompts from file
 const readPrompts = () => {
