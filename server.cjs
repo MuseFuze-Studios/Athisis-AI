@@ -29,16 +29,18 @@ app.options('/ollama-api/*', cors());
 
 // Proxy Ollama API requests
 app.use('/ollama-api', createProxyMiddleware({
-  target: 'http://localhost:11434/api', // Forward into Ollama's /api namespace
+
+  target: 'http://localhost:11434', // Forward requests to Ollama
   changeOrigin: true,
   pathRewrite: {
-    '^/ollama-api': '', // Remove the /ollama-api prefix before proxying
+    '^/ollama-api': '/api', // Rewrite to Ollama's /api namespace
   },
-  onProxyReq: (proxyReq, req, res) => {
-    // Optional: Log proxy requests for debugging
-    console.log(`[Proxy] ${req.method} ${req.url} -> ${proxyReq.baseUrl || ''}${proxyReq.path}`);
+  onProxyReq: (proxyReq, req) => {
+    // Log proxy requests for easier debugging
+    console.log(`[Proxy] ${req.method} ${req.originalUrl} -> ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
   },
-  onProxyRes: (proxyRes, req, res) => {
+  onProxyRes: (proxyRes, req) => {
+
     // Ensure CORS headers are present on proxied responses
     proxyRes.headers['Access-Control-Allow-Origin'] = req.headers.origin || '*';
     proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
