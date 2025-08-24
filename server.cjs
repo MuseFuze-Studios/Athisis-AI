@@ -14,10 +14,9 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
-    'http://149.88.113.223:3000',
-    'http://192.168.1.173:5173', // Added for local network access
-    'http://192.168.1.173:3000', // Added for local network access
-    'http://149.88.113.223:3000' // Added for public IP access
+    'http://149.88.113.223:3000', // Public IP access
+    'http://192.168.1.173:5173', // Local network access
+    'http://192.168.1.173:3000' // Local network access
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -36,11 +35,11 @@ app.use('/ollama-api', createProxyMiddleware({
     '^/ollama-api': '/api', // Rewrite to Ollama's /api namespace
   },
   onProxyReq: (proxyReq, req) => {
-    // Log proxy requests for easier debugging
+    // Remove origin to bypass Ollama CORS restrictions and log the proxy request
+    proxyReq.removeHeader('origin');
     console.log(`[Proxy] ${req.method} ${req.originalUrl} -> ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
   },
   onProxyRes: (proxyRes, req) => {
-
     // Ensure CORS headers are present on proxied responses
     proxyRes.headers['Access-Control-Allow-Origin'] = req.headers.origin || '*';
     proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
