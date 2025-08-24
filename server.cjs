@@ -8,16 +8,40 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const PORT = 3001; // Choose a port different from React app's default (3000)
 
+// Middleware (placed before proxy to handle CORS and preflight requests)
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://149.88.113.223:3000', // Public IP access
+    'http://192.168.1.173:5173', // Local network access
+    'http://192.168.1.173:3000' // Local network access
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Handle preflight requests for the Ollama proxy
+app.options('/ollama-api/*', cors());
+
 // Proxy Ollama API requests
 app.use('/ollama-api', createProxyMiddleware({
-  target: 'http://localhost:11434', // Default Ollama port
+  target: 'http://localhost:11434', // Forward requests to Ollama
   changeOrigin: true,
   pathRewrite: {
-    '^/ollama-api': '', // remove /ollama-api prefix when forwarding
+    '^/ollama-api': '/api', // Rewrite to Ollama's /api namespace
   },
-  onProxyReq: (proxyReq, req, res) => {
-    // Optional: Log proxy requests for debugging
-    console.log(`[Proxy] ${req.method} ${req.url} -> ${proxyReq.baseUrl || ''}${proxyReq.path}`);
+  onProxyReq: (proxyReq, req) => {
+    // Remove origin to bypass Ollama CORS restrictions and log the proxy request
+    proxyReq.removeHeader('origin');
+    console.log(`[Proxy] ${req.method} ${req.originalUrl} -> ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
+  },
+  onProxyRes: (proxyRes, req) => {
+    // Ensure CORS headers are present on proxied responses
+    proxyRes.headers['Access-Control-Allow-Origin'] = req.headers.origin || '*';
+    proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
   },
   onError: (err, req, res) => {
     console.error('[Proxy Error]:', err);
@@ -25,24 +49,10 @@ app.use('/ollama-api', createProxyMiddleware({
   }
 }));
 
-const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
-
-// Middleware
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-    'http://149.88.113.223:3000',
-    'http://192.168.1.173:5173', // Added for local network access
-    'http://192.168.1.173:3000', // Added for local network access
-    'http://149.88.113.223:3000' // Added for public IP access
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// JSON body parser for application endpoints (placed after proxy to avoid interfering with proxied requests)
 app.use(express.json());
+
+const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
 
 // Helper to read prompts from file
 const readPrompts = () => {
