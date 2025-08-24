@@ -3,14 +3,41 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors'); // For cross-origin requests from React app
 
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
 const app = express();
 const PORT = 3001; // Choose a port different from React app's default (3000)
+
+// Proxy Ollama API requests
+app.use('/ollama-api', createProxyMiddleware({
+  target: 'http://localhost:11434', // Default Ollama port
+  changeOrigin: true,
+  pathRewrite: {
+    '^/ollama-api': '', // remove /ollama-api prefix when forwarding
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    // Optional: Log proxy requests for debugging
+    console.log(`[Proxy] ${req.method} ${req.url} -> ${proxyReq.baseUrl || ''}${proxyReq.path}`);
+  },
+  onError: (err, req, res) => {
+    console.error('[Proxy Error]:', err);
+    res.status(500).json({ error: 'Proxy error', details: err.message });
+  }
+}));
 
 const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'],
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://149.88.113.223:3000',
+    'http://192.168.1.173:5173', // Added for local network access
+    'http://192.168.1.173:3000', // Added for local network access
+    'http://149.88.113.223:3000' // Added for public IP access
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -48,17 +75,20 @@ const writePrompts = (data) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+    console.log(`[${new Date().toISOString()}] GET /health`);
     res.status(200).send('Server is healthy');
 });
 
 // GET all prompts
 app.get('/api/prompts', (req, res) => {
+    console.log(`[${new Date().toISOString()}] GET /api/prompts`);
     const { prompts } = readPrompts();
     res.json(Object.values(prompts));
 });
 
 // GET active prompt
 app.get('/api/prompts/active', (req, res) => {
+    console.log(`[${new Date().toISOString()}] GET /api/prompts/active`);
     const { activePromptId, prompts } = readPrompts();
     const activePrompt = prompts[activePromptId];
     if (activePrompt) {
@@ -72,6 +102,7 @@ app.get('/api/prompts/active', (req, res) => {
 // GET a single prompt by ID
 app.get('/api/prompts/:id', (req, res) => {
     const { id } = req.params;
+    console.log(`[${new Date().toISOString()}] GET /api/prompts/${id}`);
     const { prompts } = readPrompts();
     const prompt = prompts[id];
     if (prompt) {
@@ -83,6 +114,7 @@ app.get('/api/prompts/:id', (req, res) => {
 
 // POST new prompt
 app.post('/api/prompts', (req, res) => {
+    console.log(`[${new Date().toISOString()}] POST /api/prompts`);
     const { name, content } = req.body;
     if (!name || !content) {
         return res.status(400).json({ message: 'Name and content are required.' });
@@ -97,6 +129,7 @@ app.post('/api/prompts', (req, res) => {
 // PUT update prompt
 app.put('/api/prompts/:id', (req, res) => {
     const { id } = req.params;
+    console.log(`[${new Date().toISOString()}] PUT /api/prompts/${id}`);
     const { name, content } = req.body;
     const data = readPrompts();
     if (!data.prompts[id]) {
@@ -113,6 +146,7 @@ app.put('/api/prompts/:id', (req, res) => {
 // DELETE prompt
 app.delete('/api/prompts/:id', (req, res) => {
     const { id } = req.params;
+    console.log(`[${new Date().toISOString()}] DELETE /api/prompts/${id}`);
     const data = readPrompts();
     if (!data.prompts[id]) {
         return res.status(404).json({ message: 'Prompt not found.' });
@@ -131,6 +165,7 @@ app.delete('/api/prompts/:id', (req, res) => {
 // PUT set active prompt
 app.put('/api/prompts/active/:id', (req, res) => {
     const { id } = req.params;
+    console.log(`[${new Date().toISOString()}] PUT /api/prompts/active/${id}`);
     const data = readPrompts();
     if (!data.prompts[id]) {
         return res.status(404).json({ message: 'Prompt not found.' });
@@ -142,6 +177,7 @@ app.put('/api/prompts/active/:id', (req, res) => {
 
 // POST reset to fallback
 app.post('/api/prompts/reset-fallback', (req, res) => {
+    console.log(`[${new Date().toISOString()}] POST /api/prompts/reset-fallback`);
     const data = readPrompts();
     data.activePromptId = 'fallback';
     writePrompts(data);
@@ -149,8 +185,8 @@ app.post('/api/prompts/reset-fallback', (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Prompt Manager API running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Prompt Manager API running on http://0.0.0.0:${PORT}`);
     // Ensure prompts.json exists and is initialized
     readPrompts();
 }).on('error', (err) => {

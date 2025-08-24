@@ -23,22 +23,26 @@ export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkin
 
   return (
     <div className={clsx(
-      'flex items-start p-6 mb-4 mx-4 rounded-3xl message-enter transition-glass',
-      isUser 
-        ? 'glass-strong ml-12 glow-primary' 
-        : 'glass mr-12 glow-secondary'
+      'flex mb-1',
+      isUser ? 'justify-end' : 'justify-start'
     )}>
       <div className={clsx(
-        'flex-shrink-0 mr-4 p-2 rounded-full transition-glass',
-        isUser ? 'glass glow-primary' : 'glass-subtle glow-accent'
+        'flex items-start p-3 mx-2 rounded-2xl message-enter transition-glass max-w-fit',
+        isUser 
+          ? 'glass-strong glow-primary' 
+          : 'glass glow-secondary'
       )}>
-        {isUser ? (
-          <User size={18} className="text-blue-400" />
-        ) : (
-          <Bot size={18} className="text-emerald-400" />
-        )}
-      </div>
-      <div className="flex-1">
+        <div className={clsx(
+          'flex-shrink-0 mr-4 p-2 rounded-full transition-glass',
+          isUser ? 'glass glow-primary' : 'glass-subtle glow-accent'
+        )}>
+          {isUser ? (
+            <User size={18} className="text-blue-400" />
+          ) : (
+            <Bot size={18} className="text-emerald-400" />
+          )}
+        </div>
+        <div className="flex-1">
         <div className="flex items-center justify-between mb-3">
           <div className="font-medium text-white">
             {isUser ? 'You' : 'Athisis.AI'}
@@ -120,5 +124,6 @@ export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkin
         </div>
       </div>
     </div>
+  </div> // This is the newly added closing div for the outer wrapper
   );
 }

@@ -56,7 +56,7 @@ function App() {
 
   const { settings, updateSettings } = useSettings();
   const {
-    models,
+    models = [],
     isConnected,
     isLoading: modelsLoading,
     error: ollamaError,
@@ -71,6 +71,7 @@ function App() {
     memories, // Expose memories
     generateChatName, // Expose generateChatName
   } = useOllama();
+  console.log('App.tsx: models from useOllama:', models); // Added console.log
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
   const { history: clipboardItems, copyToClipboard } = useClipboard(); // Initialize useClipboard // Initialize useToast
@@ -350,9 +351,9 @@ function App() {
     <div className="h-screen text-gray-100 flex flex-col relative overflow-hidden">
       {/* Ambient background elements for glassmorphism depth */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/8 rounded-full blur-3xl"></div>
-        <div className="absolute top-2/3 left-1/2 w-64 h-64 bg-emerald-500/6 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-color-shift-1"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/8 rounded-full blur-3xl animate-color-shift-2"></div>
+        <div className="absolute top-2/3 left-1/2 w-64 h-64 bg-emerald-500/6 rounded-full blur-3xl animate-color-shift-3"></div>
       </div>
 
       {!focusMode && (
@@ -428,7 +429,7 @@ function App() {
         />
 
         <main className="flex-1 flex flex-col relative">
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto max-w-3xl mx-auto">
             {isNewEmptyChat ? (
               <LandingPage onNewChat={handleNewChat} />
             ) : (
@@ -498,6 +499,7 @@ function App() {
         onPullModel={handlePullModel}
         onDeleteModel={deleteModel}
         isModelsLoading={modelsLoading}
+        onModelSelect={(modelName: string) => updateSettings({ ollama: { ...settings.ollama, model: modelName } })}
         promptId={settings.promptId}
         memoryService={memoryService} // Pass memoryService to SettingsModal
         deleteMemory={deleteMemory} // Pass deleteMemory to SettingsModal

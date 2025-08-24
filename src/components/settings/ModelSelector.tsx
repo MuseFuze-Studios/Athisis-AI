@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Download, RefreshCw, Check, AlertCircle, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -14,6 +14,7 @@ interface ModelSelectorProps {
   onRefresh: () => void;
   isLoading: boolean;
   onDeleteModel: (modelName: string) => Promise<void>;
+  models: OllamaModel[]; // Added models prop
 }
 
 export function ModelSelector({
@@ -23,39 +24,21 @@ export function ModelSelector({
   isConnected,
   onRefresh,
   isLoading,
-  onDeleteModel
+  onDeleteModel,
+  models // Destructure models prop
 }: ModelSelectorProps) {
+  console.log('ModelSelector: models prop received:', models); // Added console.log
   const [newModelName, setNewModelName] = useState('');
   const [isPulling, setIsPulling] = useState(false);
   const [pullProgress, setPullProgress] = useState<string>('');
-  const [allModels, setAllModels] = useState<OllamaModel[]>([]);
-  const [filteredModels, setFilteredModels] = useState<OllamaModel[]>([]);
 
   const { settings, updateSettings } = useSettings();
 
-  useEffect(() => {
-    const fetchModels = async () => {
-      if (isConnected) {
-        try {
-          const api = new OllamaAPI(settings.ollama.host, settings.ollama.port, settings.ollama.path);
-          const fetchedModels = await api.getModels();
-          setAllModels(fetchedModels);
-        } catch (error) {
-          console.error("Failed to fetch models:", error);
-          setAllModels([]);
-        }
-      } else {
-        setAllModels([]);
-      }
-    };
-    fetchModels();
-  }, [isConnected, settings.ollama.host, settings.ollama.port, settings.ollama.path]);
-
-  useEffect(() => {
+  // Filter models based on complexity
+  const filteredModels = useMemo(() => {
     const currentComplexity = settings.selectedModelComplexity;
-    const filtered = allModels.filter(model => model.complexity === currentComplexity);
-    setFilteredModels(filtered);
-  }, [allModels, settings.selectedModelComplexity]);
+    return models.filter(model => model.complexity === currentComplexity);
+  }, [models, settings.selectedModelComplexity]);
 
   const handlePullModel = async () => {
     if (!newModelName.trim()) return;

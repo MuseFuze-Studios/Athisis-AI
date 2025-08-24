@@ -18,7 +18,8 @@ interface SettingsModalProps {
   onRefreshModels: () => void;
   onPullModel: (modelName: string) => Promise<void>;
   isModelsLoading: boolean;
-  onDeleteModel: (modelName: string) => Promise<void>; // New prop
+  onDeleteModel: (modelName: string) => Promise<void>;
+  models: OllamaModel[]; // Added models prop
   promptId: string; // New prop
   memoryService: MemoryService | null; // New prop for memory service
   deleteMemory: (id: string) => void; // New prop for deleting memory
@@ -35,11 +36,13 @@ export function SettingsModal({
   onPullModel,
   isModelsLoading,
   onDeleteModel,
+  models,
   promptId,
   memoryService,
   deleteMemory,
   memories,
 }: SettingsModalProps) {
+
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [activePrompt, setActivePrompt] = useState<Prompt | null>(null);
   const [newPromptName, setNewPromptName] = useState('');
@@ -280,6 +283,7 @@ export function SettingsModal({
                   onRefresh={onRefreshModels}
                   isLoading={isModelsLoading}
                   onDeleteModel={handleDeleteModel}
+                  models={models} // Pass models prop
                 />
               </div>
             </section>

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001/api/prompts';
+const API_BASE_URL = '/api/prompts';
 
 export interface Prompt {
   id: string;

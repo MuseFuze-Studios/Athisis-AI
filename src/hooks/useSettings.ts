@@ -3,7 +3,7 @@ import { AppSettings } from '../types';
 
 const defaultSettings: AppSettings = {
   ollama: {
-    host: 'localhost',
+    host: '149.88.113.223',
     port: 11434,
     path: '/api',
     model: '',
@@ -29,13 +29,31 @@ export function useSettings() {
 
   useEffect(() => {
     const saved = localStorage.getItem('athisis-settings');
+    let loadedSettings: AppSettings = defaultSettings;
+
     if (saved) {
       try {
-        setSettings({ ...defaultSettings, ...JSON.parse(saved) });
+        loadedSettings = { ...defaultSettings, ...JSON.parse(saved) };
       } catch (error) {
         console.error('Failed to load settings:', error);
       }
     }
+
+    // Automatic Ollama host configuration for external access
+    if (loadedSettings.ollama.host === 'localhost' && window.location.hostname !== 'localhost') {
+      loadedSettings = {
+        ...loadedSettings,
+        ollama: {
+          ...loadedSettings.ollama,
+          host: window.location.hostname,
+          port: loadedSettings.ollama.port || 11434, // Ensure port is set, default to 11434
+        },
+      };
+      // Save the updated settings back to localStorage immediately
+      localStorage.setItem('athisis-settings', JSON.stringify(loadedSettings));
+    }
+
+    setSettings(loadedSettings);
   }, []);
 
   const updateSettings = (updates: Partial<AppSettings>) => {

@@ -125,6 +125,38 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* Background animation keyframes */
+@keyframes colorShift1 {
+  0% { filter: hue-rotate(0deg) opacity(0.1); }
+  50% { filter: hue-rotate(180deg) opacity(0.15); }
+  100% { filter: hue-rotate(360deg) opacity(0.1); }
+}
+
+@keyframes colorShift2 {
+  0% { filter: hue-rotate(90deg) opacity(0.08); }
+  50% { filter: hue-rotate(270deg) opacity(0.12); }
+  100% { filter: hue-rotate(90deg) opacity(0.08); }
+}
+
+@keyframes colorShift3 {
+  0% { filter: hue-rotate(180deg) opacity(0.06); }
+  50% { filter: hue-rotate(0deg) opacity(0.1); }
+  100% { filter: hue-rotate(180deg) opacity(0.06); }
+}
+
+/* Animation classes */
+.animate-color-shift-1 {
+  animation: colorShift1 20s infinite alternate ease-in-out;
+}
+
+.animate-color-shift-2 {
+  animation: colorShift2 25s infinite alternate ease-in-out;
+}
+
+.animate-color-shift-3 {
+  animation: colorShift3 30s infinite alternate ease-in-out;
+}
+
 /* Text selection */
 ::selection {
   background: rgba(59, 130, 246, 0.3);

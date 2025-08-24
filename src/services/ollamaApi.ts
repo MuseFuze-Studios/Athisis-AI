@@ -34,8 +34,9 @@ export interface OllamaResponse {
 export class OllamaAPI {
   private baseUrl: string;
 
-  constructor(host: string = 'localhost', port: number = 11434, path: string = '/api') {
-    this.baseUrl = `http://${host}:${port}${path}`;
+  // Constructor now takes an optional base URL for the proxy
+  constructor(proxyBaseUrl: string = '/ollama-api') {
+    this.baseUrl = proxyBaseUrl;
   }
 
   async isAvailable(): Promise<boolean> {

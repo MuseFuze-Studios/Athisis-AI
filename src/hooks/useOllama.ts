@@ -21,8 +21,12 @@ export function useOllama() {
 
   // Initialize API when settings change
   useEffect(() => {
-    if (settings.ollama.host && settings.ollama.port) {
-      const newApi = new OllamaAPI(settings.ollama.host, settings.ollama.port, settings.ollama.path);
+    const effectiveOllamaHost = settings.ollama.host === 'localhost' && window.location.hostname !== 'localhost'
+      ? window.location.hostname
+      : settings.ollama.host;
+
+    if (effectiveOllamaHost && settings.ollama.port) {
+      const newApi = new OllamaAPI(); // Uses default '/ollama-api'
       setApi(newApi);
     }
   }, [settings.ollama.host, settings.ollama.port, settings.ollama.path]);
@@ -63,6 +67,11 @@ export function useOllama() {
       if (available) {
         const modelList = await api.getModels();
         setModels(modelList);
+
+        // If no model is selected or the selected model is not available, select the first available model
+        if ((!settings.ollama.model || !modelList.some(m => m.name === settings.ollama.model)) && modelList.length > 0) {
+          updateSettings({ ollama: { ...settings.ollama, model: modelList[0].name } });
+        }
       } else {
         setModels([]);
         setError('Cannot connect to Ollama. Make sure Ollama is running.');
@@ -98,7 +107,8 @@ export function useOllama() {
       try {
         // Get the first image and ensure it has the data URL prefix
         const imageData = lastUserMessageWithImage.images[0];
-        const response = await fetch('http://localhost:5000/process_image', {
+        const pythonServiceUrl = '/python-api/process_image';
+        const response = await fetch(pythonServiceUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -155,6 +165,7 @@ export function useOllama() {
       currentAbortController.current = multiPathAbortController;
 
       let rawMultiPaths = '';
+      console.log('Starting multi-path generation...');
       try {
         await api.generateResponse(
           settings.ollama.model,
@@ -163,6 +174,7 @@ export function useOllama() {
           multiPathAbortController.signal
         );
         setThinkingProcess(rawMultiPaths); // Display all generated paths initially
+        console.log('Multi-path generation completed.');
       } catch (error) {
         console.error("Error generating multiple paths:", error);
         setThinkingProcess("Could not generate multiple reasoning paths.");
@@ -183,6 +195,7 @@ export function useOllama() {
         currentAbortController.current = evaluationAbortController;
 
         refinedPath = '';
+        console.log('Starting path evaluation and refinement...');
         try {
           let hasRefinedPathHeaderBeenAdded = false;
           await api.generateResponse(
@@ -194,7 +207,7 @@ export function useOllama() {
                 let newThinkingProcess = prev || rawMultiPaths;
                 if (!hasRefinedPathHeaderBeenAdded) {
                   newThinkingProcess += "\n\nRefined Path:\n";
-                  hasRefenedPathHeaderBeenAdded = true;
+                  hasRefinedPathHeaderBeenAdded = true;
                 }
                 return newThinkingProcess + chunk;
               });
@@ -202,6 +215,7 @@ export function useOllama() {
             evaluationAbortController.signal
           );
           setThinkingProcess("Chosen and refined path:\n" + refinedPath); // Display the final refined path
+          console.log('Path evaluation and refinement completed.');
         } catch (error) {
           console.error("Error evaluating and refining paths:", error);
           setThinkingProcess(prev => (prev || rawMultiPaths) + "\n\nCould not evaluate and refine paths. Using initial paths.");
@@ -300,7 +314,8 @@ export function useOllama() {
     if (!api) {
       throw new Error('Ollama API not initialized');
     }
-    return api.deleteModel(modelName);
+    await api.deleteModel(modelName);
+    await checkConnection(); // Refresh the model list after deletion
   }, [api]);
 
   const summarizeContent = useCallback(async (content: string): Promise<string> => {
