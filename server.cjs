@@ -10,10 +10,10 @@ const PORT = 3001; // Choose a port different from React app's default (3000)
 
 // Proxy Ollama API requests
 app.use('/ollama-api', createProxyMiddleware({
-  target: 'http://localhost:11434', // Default Ollama port
+  target: 'http://localhost:11434/api', // Forward into Ollama's /api namespace
   changeOrigin: true,
   pathRewrite: {
-    '^/ollama-api': '', // remove /ollama-api prefix when forwarding
+    '^/ollama-api': '', // Remove the /ollama-api prefix before proxying
   },
   onProxyReq: (proxyReq, req, res) => {
     // Optional: Log proxy requests for debugging
