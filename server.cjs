@@ -8,26 +8,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const PORT = 3001; // Choose a port different from React app's default (3000)
 
-// Proxy Ollama API requests
-app.use('/ollama-api', createProxyMiddleware({
-  target: 'http://localhost:11434', // Default Ollama port
-  changeOrigin: true,
-  pathRewrite: {
-    '^/ollama-api': '', // remove /ollama-api prefix when forwarding
-  },
-  onProxyReq: (proxyReq, req, res) => {
-    // Optional: Log proxy requests for debugging
-    console.log(`[Proxy] ${req.method} ${req.url} -> ${proxyReq.baseUrl || ''}${proxyReq.path}`);
-  },
-  onError: (err, req, res) => {
-    console.error('[Proxy Error]:', err);
-    res.status(500).json({ error: 'Proxy error', details: err.message });
-  }
-}));
-
-const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
-
-// Middleware
+// Middleware (placed before proxy to handle CORS and preflight requests)
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -42,7 +23,36 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle preflight requests for the Ollama proxy
+app.options('/ollama-api/*', cors());
+
+// Proxy Ollama API requests
+app.use('/ollama-api', createProxyMiddleware({
+  target: 'http://localhost:11434', // Forward requests to Ollama
+  changeOrigin: true,
+  pathRewrite: {
+    '^/ollama-api': '/api', // Rewrite to Ollama's /api namespace
+  },
+  onProxyReq: (proxyReq, req) => {
+    // Log proxy requests for easier debugging
+    console.log(`[Proxy] ${req.method} ${req.originalUrl} -> ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
+  },
+  onProxyRes: (proxyRes, req) => {
+    // Ensure CORS headers are present on proxied responses
+    proxyRes.headers['Access-Control-Allow-Origin'] = req.headers.origin || '*';
+    proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+  },
+  onError: (err, req, res) => {
+    console.error('[Proxy Error]:', err);
+    res.status(500).json({ error: 'Proxy error', details: err.message });
+  }
+}));
+
+// JSON body parser for application endpoints (placed after proxy to avoid interfering with proxied requests)
 app.use(express.json());
+
+const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
 
 // Helper to read prompts from file
 const readPrompts = () => {
