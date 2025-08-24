@@ -13,7 +13,7 @@ app.use('/ollama-api', createProxyMiddleware({
   target: 'http://localhost:11434', // Default Ollama port
   changeOrigin: true,
   pathRewrite: {
-    '^/ollama-api': '', // remove /ollama-api prefix when forwarding
+    '^/ollama-api': '/api', // forward requests to the Ollama /api namespace
   },
   onProxyReq: (proxyReq, req, res) => {
     // Optional: Log proxy requests for debugging
