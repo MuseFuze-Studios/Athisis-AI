@@ -45,6 +45,10 @@ export class MemoryService {
     this.onMemoryChange = callback;
   }
 
+  setOnMemoryAdded(callback: (memory: Memory) => void) {
+    this.onMemoryAdded = callback;
+  }
+
   unsubscribe() {
     this.onMemoryChange = null;
   }
@@ -95,7 +99,7 @@ export class MemoryService {
   private isExpired(memory: Memory): boolean {
     return Date.now() > memory.timestamp + memory.ttl;
   }
-
+  
   private clearExpiredMemories() {
     const before = this.memories.length;
     this.memories = this.memories.filter(mem => !this.isExpired(mem));
@@ -121,7 +125,6 @@ export class MemoryService {
   ): Promise<Memory | null> {
     const trimmed = text.trim();
     if (!trimmed) return null;
-
     console.log(`MemoryService: addMemory called with text: "${trimmed.substring(0, 50)}..." and type: ${type}`);
 
     try {
@@ -165,6 +168,9 @@ export class MemoryService {
       console.log(`MemoryService: Memory added to internal array. Current count: ${this.memories.length}`);
       this.saveMemories();
       console.log(`MemoryService: Successfully added and saved memory. Total memories: ${this.memories.length}`);
+      if (this.onMemoryAdded) {
+        this.onMemoryAdded(newMemory);
+      }
       return newMemory;
     } catch (error) {
       console.error(`MemoryService: Failed to add memory for text: "${trimmed}" with model "${this.embeddingModel}":`, error);

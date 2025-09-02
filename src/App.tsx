@@ -60,6 +60,7 @@ function App() {
   const [mode, setMode] = useState<'basic' | 'deep'>('basic');
 
   const { settings, updateSettings } = useSettings();
+  const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
   const {
     models = [],
     isConnected,
@@ -74,10 +75,9 @@ function App() {
     deleteMemory, // Expose deleteMemory
     memories, // Expose memories
     generateChatName, // Expose generateChatName
-  } = useOllama();
+  } = useOllama(showToast);
   console.log('App.tsx: models from useOllama:', models); // Added console.log
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
   const { history: clipboardItems } = useClipboard(); // Initialize useClipboard
 
   const activeChatSession = chatSessions.find(session => session.id === activeChatSessionId);
@@ -149,7 +149,6 @@ function App() {
     const saveFact = async (fact: string) => {
       try {
         await memoryService.addMemory(fact, 'fact');
-        showToast('Fact saved to memories!', 'success');
       } catch (error) {
         console.error('Failed to save fact:', error);
         showToast('Failed to save fact.', 'error');
