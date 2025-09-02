@@ -42,7 +42,13 @@ export class OllamaAPI {
   async isAvailable(): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/tags`);
-      return response.ok;
+      if (!response.ok) return false;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        await response.json();
+        return true;
+      }
+      return false;
     } catch {
       return false;
     }
@@ -54,7 +60,14 @@ export class OllamaAPI {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error('Invalid JSON when loading models:', text);
+        throw new Error('Invalid response from Ollama');
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modelsWithComplexity = (data.models || []).map((model: any) => ({
         ...model,
@@ -249,3 +262,4 @@ export class OllamaAPI {
     }
   }
 }
+
