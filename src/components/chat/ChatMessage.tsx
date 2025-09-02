@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Message } from '../../types';
 import { CodeBlock } from '../code/CodeBlock';
-import { User, Bot, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { User, Bot, Copy, Check, ChevronDown, ChevronUp, Pin } from 'lucide-react';
 import { clsx } from 'clsx';
 import { AnimatedTextMessage } from './AnimatedTextMessage';
 import { useClipboard } from '../../hooks/useClipboard';
@@ -12,9 +12,10 @@ interface ChatMessageProps {
   showLineNumbers?: boolean;
   isLatestMessage?: boolean;
   thinkingProcess?: string | null;
+  onPin?: (id: string) => void;
 }
 
-export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkingProcess }: ChatMessageProps) {
+export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkingProcess, onPin }: ChatMessageProps) {
   const { copied, copyToClipboard } = useClipboard();
   const [showThinkingProcess, setShowThinkingProcess] = useState(false); // State for toggling thinking process
 
@@ -28,9 +29,10 @@ export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkin
     )}>
       <div className={clsx(
         'flex items-start p-3 mx-2 rounded-2xl message-enter transition-glass max-w-fit',
-        isUser 
-          ? 'glass-strong glow-primary' 
-          : 'glass glow-secondary'
+        isUser
+          ? 'glass-strong glow-primary'
+          : 'glass glow-secondary',
+        message.pinned && 'border-2 border-yellow-400'
       )}>
         <div className={clsx(
           'flex-shrink-0 mr-4 p-2 rounded-full transition-glass',
@@ -44,8 +46,11 @@ export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkin
         </div>
         <div className="flex-1">
         <div className="flex items-center justify-between mb-3">
-          <div className="font-medium text-white">
+          <div className="font-medium text-white flex items-center">
             {isUser ? 'You' : 'Athisis.AI'}
+            {typeof message.score === 'number' && (
+              <span className="ml-2 text-xs text-emerald-400 glass px-2 py-0.5 rounded-full">{message.score}</span>
+            )}
           </div>
           <div className="text-xs text-gray-500 font-normal">
             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -108,8 +113,14 @@ export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkin
             )
           ))}
         </div>
-        
-        <div className="flex justify-end mt-4">
+
+        {message.tldr && (
+          <div className="mt-2 text-sm text-gray-400 border-t border-white/10 pt-2">
+            <strong>TL;DR:</strong> {message.tldr}
+          </div>
+        )}
+
+        <div className="flex justify-end mt-4 space-x-2">
           <button
             onClick={() => copyToClipboard(message.content)}
             className="glass glass-hover transition-glass px-3 py-2 rounded-full text-gray-400 hover:text-white flex items-center text-sm font-medium group"
@@ -121,6 +132,15 @@ export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkin
             )}
             {copied ? 'Copied!' : 'Copy'}
           </button>
+          {!isUser && (
+            <button
+              onClick={() => onPin?.(message.id)}
+              className="glass glass-hover transition-glass px-3 py-2 rounded-full text-gray-400 hover:text-white flex items-center text-sm font-medium group"
+            >
+              <Pin size={14} className={clsx('mr-2', message.pinned ? 'text-yellow-400' : 'group-hover:scale-110 transition-transform')} />
+              {message.pinned ? 'Pinned' : 'Pin'}
+            </button>
+          )}
         </div>
       </div>
     </div>
