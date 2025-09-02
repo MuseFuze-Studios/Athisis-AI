@@ -4,6 +4,7 @@ import { useSettings } from './useSettings';
 import { promptApi } from '../services/promptApi';
 import { MemoryService } from '../services/memoryService';
 import { useToast } from './useToast'; // Import useToast
+import { ResponseCache } from '../services/cacheService';
 
 export function useOllama() {
   const { settings, updateSettings } = useSettings();
@@ -18,6 +19,11 @@ export function useOllama() {
 
   const currentAbortController = useRef<AbortController | null>(null);
   const { showToast } = useToast(); // Initialize useToast
+  const cacheRef = useRef<ResponseCache>();
+
+  if (!cacheRef.current) {
+    cacheRef.current = new ResponseCache();
+  }
 
   // Initialize API when settings change
   useEffect(() => {
@@ -102,6 +108,11 @@ export function useOllama() {
     let latestUserMessage = messages[messages.length - 1]?.content || '';
     const lastUserMessageWithImage = messages.findLast(msg => msg.role === 'user' && msg.images && msg.images.length > 0);
 
+    const modelToUse =
+      latestUserMessage.length < 80 && settings.ollama.quickChatModel
+        ? settings.ollama.quickChatModel
+        : settings.ollama.workhorseModel || settings.ollama.model;
+
     if (lastUserMessageWithImage && api) {
       setThinkingProcess("Analyzing image with Python service...");
       try {
@@ -138,6 +149,12 @@ export function useOllama() {
     setThinkingProcess(null); // Clear previous thinking process
     let refinedPath = ''; // Declare refinedPath here, initialized to empty string
 
+    const cacheKey = JSON.stringify({ model: modelToUse, messages });
+    const cached = await cacheRef.current?.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
     // Step 0: Retrieve relevant memories for context augmentation
     let contextMemories = '';
     if (memoryService && latestUserMessage.length > 10) { // Only retrieve if user message is substantial
@@ -168,7 +185,7 @@ export function useOllama() {
       console.log('Starting multi-path generation...');
       try {
         await api.generateResponse(
-          settings.ollama.model,
+          modelToUse,
           multiPathPromptMessages,
           (chunk) => { rawMultiPaths += chunk; setThinkingProcess(prev => (prev || '') + chunk); },
           multiPathAbortController.signal
@@ -199,7 +216,7 @@ export function useOllama() {
         try {
           let hasRefinedPathHeaderBeenAdded = false;
           await api.generateResponse(
-            settings.ollama.model,
+          modelToUse,
             evaluationPromptMessages,
             (chunk) => {
               refinedPath += chunk;
@@ -257,7 +274,7 @@ export function useOllama() {
     let finalResponse: OllamaResponse | null = null;
 
     try {
-      finalResponse = await api.generateResponse(settings.ollama.model, mainResponseMessages, onStream, mainAbortController.signal);
+      finalResponse = await api.generateResponse(modelToUse, mainResponseMessages, onStream, mainAbortController.signal);
     } finally {
       currentAbortController.current = null; // Clear on completion or error
     }
@@ -291,6 +308,7 @@ export function useOllama() {
       }
     }
 
+    await cacheRef.current?.set(cacheKey, JSON.stringify(finalResponse));
     return finalResponse;
   }, [api, isConnected, settings.ollama.model, settings.promptId, memoryService]);
 

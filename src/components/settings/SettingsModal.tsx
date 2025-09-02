@@ -343,6 +343,42 @@ export function SettingsModal({
                     Enable CUDA acceleration
                   </label>
                 </div>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="qualityPass"
+                    checked={settings.qualityPassEnabled}
+                    onChange={(e) => onUpdateSettings({ qualityPassEnabled: e.target.checked })}
+                    className="rounded glass border-white/20 focus:ring-blue-500/50"
+                  />
+                  <label htmlFor="qualityPass" className="text-sm text-gray-300 font-medium">
+                    Enable Quality Pass
+                  </label>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="tldr"
+                    checked={settings.tldrEnabled}
+                    onChange={(e) => onUpdateSettings({ tldrEnabled: e.target.checked })}
+                    className="rounded glass border-white/20 focus:ring-blue-500/50"
+                  />
+                  <label htmlFor="tldr" className="text-sm text-gray-300 font-medium">
+                    Show TL;DR summaries
+                  </label>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="rag"
+                    checked={settings.ragEnabled}
+                    onChange={(e) => onUpdateSettings({ ragEnabled: e.target.checked })}
+                    className="rounded glass border-white/20 focus:ring-blue-500/50"
+                  />
+                  <label htmlFor="rag" className="text-sm text-gray-300 font-medium">
+                    Enable RAG
+                  </label>
+                </div>
               </div>
             </section>
           )}

@@ -8,6 +8,8 @@ const defaultSettings: AppSettings = {
     path: '/api',
     model: '',
     modelsDirectory: '',
+    quickChatModel: '',
+    workhorseModel: '',
   },
   promptId: 'fallback',
   selectedModelComplexity: 'complex',
@@ -22,6 +24,9 @@ const defaultSettings: AppSettings = {
     'focus-input': 'Cmd+L',
     'toggle-sidebar': 'Cmd+B',
   },
+  qualityPassEnabled: false,
+  tldrEnabled: false,
+  ragEnabled: false,
 };
 
 export function useSettings() {

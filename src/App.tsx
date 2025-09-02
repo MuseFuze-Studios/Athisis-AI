@@ -6,6 +6,7 @@ import { SettingsModal } from './components/settings/SettingsModal';
 import { Button } from './components/ui/Button';
 import { Menu, Minimize2, Settings, Bot, StopCircle } from 'lucide-react';
 import { Message, ChatSession } from './types';
+import { improveResponse } from './utils/responseImprover';
 import { useSettings } from './hooks/useSettings';
 import { useOllama } from './hooks/useOllama';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -274,6 +275,7 @@ function App() {
     console.log('Sending message to AI:', conversationMessages);
 
     try {
+      const startTime = performance.now();
       const finalResponse = await generateResponse(
         conversationMessages,
         (chunk) => {
@@ -295,19 +297,36 @@ function App() {
       );
 
       if (finalResponse && finalResponse.response) {
+        const latency = performance.now() - startTime;
+        let improved = null;
+        if (settings.qualityPassEnabled || settings.tldrEnabled) {
+          improved = improveResponse(finalResponse.response);
+        }
         setChatSessions(prev => prev.map(session => {
           if (session.id === activeChatSessionId) {
             return {
               ...session,
               messages: session.messages.map(msg =>
                 msg.id === assistantMessageId
-                  ? { ...msg, content: finalResponse.response }
+                  ? {
+                      ...msg,
+                      content: improved ? improved.refined : finalResponse.response,
+                      refinedContent: improved ? improved.refined : undefined,
+                      score: improved ? improved.score : undefined,
+                      tldr: settings.tldrEnabled && improved ? improved.tldr : undefined,
+                    }
                   : msg
               )
             };
           }
           return session;
         }));
+
+        fetch('/metrics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ latency, tokens: finalResponse.eval_count, score: improved?.score })
+        }).catch(() => {});
       }
       
     } catch (error) {
@@ -344,6 +363,19 @@ function App() {
       console.error('Failed to pull model:', error);
       throw error;
     }
+  };
+
+  const handlePinMessage = (id: string) => {
+    setChatSessions(prev => prev.map(session =>
+      session.id === activeChatSessionId
+        ? {
+            ...session,
+            messages: session.messages.map(m =>
+              m.id === id ? { ...m, pinned: !m.pinned } : m
+            )
+          }
+        : session
+    ));
   };
 
   return (
@@ -439,6 +471,7 @@ function App() {
                   showLineNumbers={settings.showLineNumbers}
                   isLatestMessage={index === messages.length - 1}
                   thinkingProcess={mode === 'deep' && message.role === 'assistant' && index === messages.length - 1 ? thinkingProcess : null}
+                  onPin={handlePinMessage}
                 />
               ))
             )}
