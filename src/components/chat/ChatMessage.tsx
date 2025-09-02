@@ -5,7 +5,7 @@ import { User, Bot, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import { AnimatedTextMessage } from './AnimatedTextMessage';
 import { useClipboard } from '../../hooks/useClipboard';
-import { parseMessageContent, MessageSegment } from '../../utils/markdownParser';
+import { parseMessageContent } from '../../utils/markdownParser';
 
 interface ChatMessageProps {
   message: Message;

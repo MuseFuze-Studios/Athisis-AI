@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle, Info, XCircle } from 'lucide-react';
 import { clsx } from 'clsx';

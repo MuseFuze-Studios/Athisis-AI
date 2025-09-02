@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Download, RefreshCw, Check, AlertCircle, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { OllamaModel, OllamaAPI } from '../../services/ollamaApi';
+import { OllamaModel } from '../../services/ollamaApi';
 import { clsx } from 'clsx';
 import { useSettings } from '../../hooks/useSettings';
 

@@ -41,7 +41,7 @@ export function DirectorySelector({
       if (isValid) {
         onPathChange(path);
       }
-    } catch (error) {
+    } catch {
       setValidationResult('invalid');
     } finally {
       setIsValidating(false);

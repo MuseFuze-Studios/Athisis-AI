@@ -21,9 +21,8 @@ export function useOllama() {
 
   // Initialize API when settings change
   useEffect(() => {
-    const effectiveOllamaHost = settings.ollama.host === 'localhost' && window.location.hostname !== 'localhost'
-      ? window.location.hostname
-      : settings.ollama.host;
+    const isWildcardHost = settings.ollama.host === 'localhost' || settings.ollama.host === '0.0.0.0';
+    const effectiveOllamaHost = isWildcardHost ? window.location.hostname : settings.ollama.host;
 
     if (effectiveOllamaHost && settings.ollama.port) {
       const baseUrl = `http://${effectiveOllamaHost}:${settings.ollama.port}${settings.ollama.path || '/api'}`;
