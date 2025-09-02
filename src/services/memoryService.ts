@@ -24,7 +24,6 @@ export class MemoryService {
   private embeddingModel: string;
   private readonly STORAGE_KEY = 'athisis-memories';
   private onMemoryChange: (() => void) | null = null;
-  private onMemoryAdded: ((memory: Memory) => void) | null = null;
   private readonly saveThreshold = 0.6;
 
   private readonly ttlByType: Record<MemoryType, number> = {
@@ -100,7 +99,7 @@ export class MemoryService {
   private isExpired(memory: Memory): boolean {
     return Date.now() > memory.timestamp + memory.ttl;
   }
-
+  
   private clearExpiredMemories() {
     const before = this.memories.length;
     this.memories = this.memories.filter(mem => !this.isExpired(mem));
@@ -126,7 +125,6 @@ export class MemoryService {
   ): Promise<Memory | null> {
     const trimmed = text.trim();
     if (!trimmed) return null;
-
     console.log(`MemoryService: addMemory called with text: "${trimmed.substring(0, 50)}..." and type: ${type}`);
 
     try {
