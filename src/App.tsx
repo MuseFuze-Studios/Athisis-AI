@@ -59,7 +59,6 @@ function App() {
     models = [],
     isConnected,
     isLoading: modelsLoading,
-    error: ollamaError,
     checkConnection,
     generateResponse,
     pullModel,
@@ -74,7 +73,7 @@ function App() {
   console.log('App.tsx: models from useOllama:', models); // Added console.log
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
-  const { history: clipboardItems, copyToClipboard } = useClipboard(); // Initialize useClipboard // Initialize useToast
+  const { history: clipboardItems } = useClipboard(); // Initialize useClipboard
 
   const activeChatSession = chatSessions.find(session => session.id === activeChatSessionId);
   const messages = activeChatSession ? activeChatSession.messages : [];
@@ -500,7 +499,6 @@ function App() {
         onDeleteModel={deleteModel}
         isModelsLoading={modelsLoading}
         onModelSelect={(modelName: string) => updateSettings({ ollama: { ...settings.ollama, model: modelName } })}
-        promptId={settings.promptId}
         memoryService={memoryService} // Pass memoryService to SettingsModal
         deleteMemory={deleteMemory} // Pass deleteMemory to SettingsModal
         memories={memories} // Pass memories to SettingsModal

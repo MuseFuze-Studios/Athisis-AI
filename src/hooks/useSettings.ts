@@ -3,11 +3,11 @@ import { AppSettings } from '../types';
 
 const defaultSettings: AppSettings = {
   ollama: {
-    host: '149.88.113.223',
+    host: 'localhost',
     port: 11434,
     path: '/api',
     model: '',
-    modelsDirectory: 'F:\AI\Ollama Models',
+    modelsDirectory: '',
   },
   promptId: 'fallback',
   selectedModelComplexity: 'complex',
@@ -39,14 +39,18 @@ export function useSettings() {
       }
     }
 
-    // Automatic Ollama host configuration for external access
-    if (loadedSettings.ollama.host === 'localhost' && window.location.hostname !== 'localhost') {
+    // Automatic Ollama host configuration for external or wildcard hosts
+    if (loadedSettings.ollama.host === 'localhost' || loadedSettings.ollama.host === '0.0.0.0') {
+      const port = !loadedSettings.ollama.port || loadedSettings.ollama.port === 3000
+        ? 11434
+        : loadedSettings.ollama.port;
+
       loadedSettings = {
         ...loadedSettings,
         ollama: {
           ...loadedSettings.ollama,
           host: window.location.hostname,
-          port: loadedSettings.ollama.port || 11434, // Ensure port is set, default to 11434
+          port,
         },
       };
       // Save the updated settings back to localStorage immediately

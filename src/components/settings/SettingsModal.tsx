@@ -20,7 +20,6 @@ interface SettingsModalProps {
   isModelsLoading: boolean;
   onDeleteModel: (modelName: string) => Promise<void>;
   models: OllamaModel[]; // Added models prop
-  promptId: string; // New prop
   memoryService: MemoryService | null; // New prop for memory service
   deleteMemory: (id: string) => void; // New prop for deleting memory
   memories: Memory[]; // New prop for memories
@@ -37,7 +36,6 @@ export function SettingsModal({
   isModelsLoading,
   onDeleteModel,
   models,
-  promptId,
   memoryService,
   deleteMemory,
   memories,
