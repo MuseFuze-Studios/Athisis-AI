@@ -1,6 +1,8 @@
 import React from 'react';
 import { ClipboardItem } from '../../types';
-import { Clock, Copy, Code } from 'lucide-react';
+import Clock from 'lucide-react/dist/esm/icons/clock.js';
+import Copy from 'lucide-react/dist/esm/icons/copy.js';
+import Code from 'lucide-react/dist/esm/icons/code.js';
 import { Button } from '../ui/Button';
 import { useClipboard } from '../../hooks/useClipboard';
 

@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react'; // Ensure useState is imported
-import { X, Cpu, Keyboard, Bot, MessageSquareText, Plus, Edit, Trash2, CheckCircle } from 'lucide-react';
+import X from 'lucide-react/dist/esm/icons/x.js';
+import Cpu from 'lucide-react/dist/esm/icons/cpu.js';
+import Keyboard from 'lucide-react/dist/esm/icons/keyboard.js';
+import Bot from 'lucide-react/dist/esm/icons/bot.js';
+import MessageSquareText from 'lucide-react/dist/esm/icons/message-square-text.js';
+import Plus from 'lucide-react/dist/esm/icons/plus.js';
+import Edit from 'lucide-react/dist/esm/icons/edit.js';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2.js';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle.js';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { ModelSelector } from './ModelSelector';

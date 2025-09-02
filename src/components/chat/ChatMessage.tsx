@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Message } from '../../types';
 import { CodeBlock } from '../code/CodeBlock';
-import { User, Bot, Copy, Check, ChevronDown, ChevronUp, Pin } from 'lucide-react';
+import User from 'lucide-react/dist/esm/icons/user.js';
+import Bot from 'lucide-react/dist/esm/icons/bot.js';
+import Copy from 'lucide-react/dist/esm/icons/copy.js';
+import Check from 'lucide-react/dist/esm/icons/check.js';
+import ChevronDown from 'lucide-react/dist/esm/icons/chevron-down.js';
+import ChevronUp from 'lucide-react/dist/esm/icons/chevron-up.js';
+import Pin from 'lucide-react/dist/esm/icons/pin.js';
 import { clsx } from 'clsx';
 import { AnimatedTextMessage } from './AnimatedTextMessage';
 import { useClipboard } from '../../hooks/useClipboard';

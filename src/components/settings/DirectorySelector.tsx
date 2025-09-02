@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Folder, Check, AlertTriangle } from 'lucide-react';
+import Folder from 'lucide-react/dist/esm/icons/folder.js';
+import Check from 'lucide-react/dist/esm/icons/check.js';
+import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle.js';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 

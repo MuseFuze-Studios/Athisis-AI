@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChatSession } from '../../types';
-import { MessageSquare, PlusCircle } from 'lucide-react';
+import MessageSquare from 'lucide-react/dist/esm/icons/message-square.js';
+import PlusCircle from 'lucide-react/dist/esm/icons/plus-circle.js';
 import { clsx } from 'clsx';
 
 interface ChatHistoryProps {

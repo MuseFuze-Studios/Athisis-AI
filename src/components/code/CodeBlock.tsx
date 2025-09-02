@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
-import { Copy, Check, Edit3, Save, X } from 'lucide-react';
+import Copy from 'lucide-react/dist/esm/icons/copy.js';
+import Check from 'lucide-react/dist/esm/icons/check.js';
+import Edit3 from 'lucide-react/dist/esm/icons/edit-3.js';
+import Save from 'lucide-react/dist/esm/icons/save.js';
+import X from 'lucide-react/dist/esm/icons/x.js';
 import { Button } from '../ui/Button';
 import { useClipboard } from '../../hooks/useClipboard';
 import { clsx } from 'clsx';
