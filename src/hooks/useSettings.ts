@@ -7,7 +7,7 @@ const defaultSettings: AppSettings = {
     port: 11434,
     path: '/api',
     model: '',
-    modelsDirectory: 'F:\AI\Ollama Models',
+    modelsDirectory: 'F:/AI/Ollama Models',
   },
   promptId: 'fallback',
   selectedModelComplexity: 'complex',
@@ -39,8 +39,8 @@ export function useSettings() {
       }
     }
 
-    // Automatic Ollama host configuration for external access
-    if (loadedSettings.ollama.host === 'localhost' && window.location.hostname !== 'localhost') {
+    // Automatic Ollama host configuration for external or wildcard hosts
+    if (loadedSettings.ollama.host === 'localhost' || loadedSettings.ollama.host === '0.0.0.0') {
       loadedSettings = {
         ...loadedSettings,
         ollama: {

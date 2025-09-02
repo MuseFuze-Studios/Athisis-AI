@@ -34,16 +34,16 @@ export interface OllamaResponse {
 export class OllamaAPI {
   private baseUrl: string;
 
-  // Constructor now takes an optional base URL for the proxy
-  constructor(proxyBaseUrl: string = '/ollama-api') {
-    this.baseUrl = proxyBaseUrl;
+  // Constructor takes the full base URL of the Ollama API
+  constructor(baseUrl: string = 'http://localhost:11434/api') {
+    this.baseUrl = baseUrl;
   }
 
   async isAvailable(): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/tags`);
       return response.ok;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -55,6 +55,7 @@ export class OllamaAPI {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const modelsWithComplexity = (data.models || []).map((model: any) => ({
         ...model,
         complexity: model.name.toLowerCase().includes('mini') || model.name.toLowerCase().includes('tiny') ? 'simple' : 'complex',
@@ -158,7 +159,7 @@ export class OllamaAPI {
     }
   }
 
-  async pullModel(model: string, onProgress?: (progress: any) => void): Promise<void> {
+  async pullModel(model: string, onProgress?: (progress: unknown) => void): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/pull`, {
         method: 'POST',
@@ -189,8 +190,8 @@ export class OllamaAPI {
           for (const line of lines) {
             try {
               const data = JSON.parse(line);
-              onProgress(data);
-            } catch (e) {
+              onProgress?.(data);
+            } catch {
               // Skip invalid JSON lines
             }
           }
