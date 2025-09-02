@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { OllamaAPI, OllamaModel } from '../services/ollamaApi';
 import { useSettings } from './useSettings';
-import { promptApi, Prompt } from '../services/promptApi';
+import { promptApi } from '../services/promptApi';
 import { MemoryService } from '../services/memoryService';
 import { useToast } from './useToast'; // Import useToast
 
 export function useOllama() {
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const [api, setApi] = useState<OllamaAPI | null>(null);
   const [models, setModels] = useState<OllamaModel[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -26,7 +26,8 @@ export function useOllama() {
       : settings.ollama.host;
 
     if (effectiveOllamaHost && settings.ollama.port) {
-      const newApi = new OllamaAPI(); // Uses default '/ollama-api'
+      const baseUrl = `http://${effectiveOllamaHost}:${settings.ollama.port}${settings.ollama.path || '/api'}`;
+      const newApi = new OllamaAPI(baseUrl);
       setApi(newApi);
     }
   }, [settings.ollama.host, settings.ollama.port, settings.ollama.path]);
@@ -302,7 +303,7 @@ export function useOllama() {
     }
   }, []);
 
-  const pullModel = useCallback(async (modelName: string, onProgress?: (progress: any) => void) => {
+  const pullModel = useCallback(async (modelName: string, onProgress?: (progress: unknown) => void) => {
     if (!api) {
       throw new Error('Ollama API not initialized');
     }
