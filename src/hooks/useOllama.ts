@@ -3,10 +3,12 @@ import { OllamaAPI, OllamaModel } from '../services/ollamaApi';
 import { useSettings } from './useSettings';
 import { promptApi } from '../services/promptApi';
 import { MemoryService } from '../services/memoryService';
-import { useToast } from './useToast'; // Import useToast
+import { Memory } from '../types';
 import { ResponseCache } from '../services/cacheService';
 
-export function useOllama() {
+export function useOllama(
+  showToast: (message: string, type?: 'success' | 'info' | 'error', duration?: number) => void = () => {}
+) {
   const { settings, updateSettings } = useSettings();
   const [api, setApi] = useState<OllamaAPI | null>(null);
   const [models, setModels] = useState<OllamaModel[]>([]);
@@ -18,7 +20,6 @@ export function useOllama() {
   const [memories, setMemories] = useState<Memory[]>([]);
 
   const currentAbortController = useRef<AbortController | null>(null);
-  const { showToast } = useToast(); // Initialize useToast
   const cacheRef = useRef<ResponseCache>();
 
   if (!cacheRef.current) {
@@ -49,6 +50,10 @@ export function useOllama() {
           setMemories(currentMemories);
           console.log(`useOllama: Memories updated via subscription. Total memories: ${currentMemories.length}`);
         });
+        newMemoryService.setOnMemoryAdded(memory => {
+          const preview = memory.text.length > 60 ? `${memory.text.slice(0, 60)}...` : memory.text;
+          showToast(`AI remembered: ${preview}`, 'info');
+        });
         console.log('MemoryService initialized successfully with embedding model:', settings.embeddingModel);
         console.log(`useOllama: Initial memories after service init: ${newMemoryService.getAllMemories().length}`);
       } catch (error) {
@@ -57,7 +62,7 @@ export function useOllama() {
         setMemoryService(null);
       }
     }
-  }, [api, settings.embeddingModel]);
+  }, [api, settings.embeddingModel, showToast]);
 
   // Check connection and load models
   const checkConnection = useCallback(async () => {
@@ -89,12 +94,31 @@ export function useOllama() {
     } finally {
       setIsLoading(false);
     }
-  }, [api]);
+  }, [api, settings.ollama, updateSettings]);
 
   // Auto-check connection when API changes
   useEffect(() => {
     checkConnection();
   }, [checkConnection]);
+
+  const summarizeContent = useCallback(async (content: string): Promise<string> => {
+    if (!api) {
+      throw new Error('Ollama API not initialized for summarization.');
+    }
+    const summarizePrompt = `Please summarize the following text concisely, focusing on key information and facts. The summary should be no more than 2-3 sentences.\n\nText: """\n${content}\n"""\n\nSummary:`;
+    const messages = [{ role: 'user', content: summarizePrompt }];
+    try {
+      const response = await api.generateResponse(settings.ollama.model, messages);
+      console.log('Summarization response:', response);
+      const summary = response?.message?.content || response?.response || '';
+      console.log('Generated summary:', summary);
+      return summary;
+    } catch (error) {
+      console.error('Failed to summarize content:', error);
+      showToast('Failed to summarize content for memory.', 'error');
+      return content; // Fallback to original content if summarization fails
+    }
+  }, [api, settings.ollama.model, showToast]);
 
   const generateResponse = useCallback(async (
     messages: { role: 'user' | 'assistant' | 'system', content: string, images?: string[] }[],
@@ -162,7 +186,7 @@ export function useOllama() {
         const similarMemories = await memoryService.retrieveSimilarMemories(latestUserMessage, 3); // Retrieve top 3
         if (similarMemories.length > 0) {
           contextMemories = '\n\nRelevant past conversations:\n' +
-            similarMemories.map(mem => `[${mem.type}]: ${mem.content}`).join('\n');
+            similarMemories.map(mem => `[${mem.type}]: ${mem.text}`).join('\n');
           console.log('Augmenting prompt with memories:', contextMemories);
         }
       } catch (memError) {
@@ -297,9 +321,7 @@ export function useOllama() {
         console.log('Attempting to summarize conversation for automatic memory...');
         const conversationSummary = await summarizeContent(`User: ${userMessage}\nAI: ${aiResponse}`);
         if (conversationSummary) {
-          await memoryService.addMemory(conversationSummary, 'assistant'); // Store as assistant memory
-          console.log('Calling showToast for automatic memory.');
-          showToast('Conversation summarized and added to memory!', 'success');
+          await memoryService.addMemory(conversationSummary, 'fact', { tags: ['auto'] }); // Store as fact memory
           console.log('Conversation summarized and successfully added to memory:', conversationSummary);
         } else {
           showToast('Automatic summarization failed, memory not saved.', 'error');
@@ -310,7 +332,17 @@ export function useOllama() {
 
     await cacheRef.current?.set(cacheKey, JSON.stringify(finalResponse));
     return finalResponse;
-  }, [api, isConnected, settings.ollama.model, settings.promptId, memoryService]);
+  }, [
+    api,
+    isConnected,
+    settings.ollama.model,
+    settings.promptId,
+    memoryService,
+    settings.ollama.quickChatModel,
+    settings.ollama.workhorseModel,
+    showToast,
+    summarizeContent,
+  ]);
 
   const abortGeneration = useCallback(() => {
     if (currentAbortController.current) {
@@ -334,26 +366,7 @@ export function useOllama() {
     }
     await api.deleteModel(modelName);
     await checkConnection(); // Refresh the model list after deletion
-  }, [api]);
-
-  const summarizeContent = useCallback(async (content: string): Promise<string> => {
-    if (!api) {
-      throw new Error('Ollama API not initialized for summarization.');
-    }
-    const summarizePrompt = `Please summarize the following text concisely, focusing on key information and facts. The summary should be no more than 2-3 sentences.\n\nText: """\n${content}\n"""\n\nSummary:`;
-    const messages = [{ role: 'user', content: summarizePrompt }];
-    try {
-      const response = await api.generateResponse(settings.ollama.model, messages);
-      console.log('Summarization response:', response);
-      const summary = response?.message?.content || response?.response || '';
-      console.log('Generated summary:', summary);
-      return summary;
-    } catch (error) {
-      console.error('Failed to summarize content:', error);
-      showToast('Failed to summarize content for memory.', 'error');
-      return content; // Fallback to original content if summarization fails
-    }
-  }, [api, settings.ollama.model, showToast]);
+  }, [api, checkConnection]);
 
   const saveFact = useCallback(async (fact: string) => {
     if (!memoryService) {
@@ -362,12 +375,9 @@ export function useOllama() {
     }
     try {
       console.log(`useOllama: saveFact called with fact: "${fact}"`);
-      const addedMemory = await memoryService.addMemory(fact, 'user');
-      if (addedMemory) {
-        showToast('Fact saved to memory!', 'success');
-        console.log('useOllama: Fact successfully added to memoryService.', addedMemory);
-      } else {
-        showToast('Failed to save fact to memory: No memory returned.', 'error');
+      const addedMemory = await memoryService.addMemory(fact, 'fact');
+      if (!addedMemory) {
+        showToast('Fact not saved to memory.', 'info');
         console.error('useOllama: memoryService.addMemory returned null.');
       }
     } catch (error) {
