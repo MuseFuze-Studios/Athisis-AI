@@ -3,6 +3,7 @@ import { OllamaAPI, OllamaModel } from '../services/ollamaApi';
 import { useSettings } from './useSettings';
 import { promptApi } from '../services/promptApi';
 import { MemoryService } from '../services/memoryService';
+import { Memory } from '../types';
 import { useToast } from './useToast'; // Import useToast
 import { ResponseCache } from '../services/cacheService';
 
@@ -162,7 +163,7 @@ export function useOllama() {
         const similarMemories = await memoryService.retrieveSimilarMemories(latestUserMessage, 3); // Retrieve top 3
         if (similarMemories.length > 0) {
           contextMemories = '\n\nRelevant past conversations:\n' +
-            similarMemories.map(mem => `[${mem.type}]: ${mem.content}`).join('\n');
+            similarMemories.map(mem => `[${mem.type}]: ${mem.text}`).join('\n');
           console.log('Augmenting prompt with memories:', contextMemories);
         }
       } catch (memError) {
@@ -297,7 +298,7 @@ export function useOllama() {
         console.log('Attempting to summarize conversation for automatic memory...');
         const conversationSummary = await summarizeContent(`User: ${userMessage}\nAI: ${aiResponse}`);
         if (conversationSummary) {
-          await memoryService.addMemory(conversationSummary, 'assistant'); // Store as assistant memory
+          await memoryService.addMemory(conversationSummary, 'fact', { tags: ['auto'] }); // Store as fact memory
           console.log('Calling showToast for automatic memory.');
           showToast('Conversation summarized and added to memory!', 'success');
           console.log('Conversation summarized and successfully added to memory:', conversationSummary);
@@ -362,7 +363,7 @@ export function useOllama() {
     }
     try {
       console.log(`useOllama: saveFact called with fact: "${fact}"`);
-      const addedMemory = await memoryService.addMemory(fact, 'user');
+      const addedMemory = await memoryService.addMemory(fact, 'fact');
       if (addedMemory) {
         showToast('Fact saved to memory!', 'success');
         console.log('useOllama: Fact successfully added to memoryService.', addedMemory);

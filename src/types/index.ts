@@ -35,12 +35,26 @@ export interface OllamaConfig {
   workhorseModel?: string; // Larger model for complex tasks
 }
 
+export type MemoryType =
+  | 'profile'
+  | 'preference'
+  | 'project'
+  | 'fact'
+  | 'glossary'
+  | 'task';
+
 export interface Memory {
   id: string;
-  content: string;
-  embedding: number[];
+  type: MemoryType;
+  text: string;
+  sourceMsgId?: string;
   timestamp: number; // Unix timestamp
-  type: 'user' | 'assistant';
+  tags: string[];
+  entities: string[];
+  embedding: number[];
+  score: number;
+  ttl: number; // milliseconds
+  confidence: number;
 }
 
 export interface AppSettings {
