@@ -101,6 +101,25 @@ export function useOllama(
     checkConnection();
   }, [checkConnection]);
 
+  const summarizeContent = useCallback(async (content: string): Promise<string> => {
+    if (!api) {
+      throw new Error('Ollama API not initialized for summarization.');
+    }
+    const summarizePrompt = `Please summarize the following text concisely, focusing on key information and facts. The summary should be no more than 2-3 sentences.\n\nText: """\n${content}\n"""\n\nSummary:`;
+    const messages = [{ role: 'user', content: summarizePrompt }];
+    try {
+      const response = await api.generateResponse(settings.ollama.model, messages);
+      console.log('Summarization response:', response);
+      const summary = response?.message?.content || response?.response || '';
+      console.log('Generated summary:', summary);
+      return summary;
+    } catch (error) {
+      console.error('Failed to summarize content:', error);
+      showToast('Failed to summarize content for memory.', 'error');
+      return content; // Fallback to original content if summarization fails
+    }
+  }, [api, settings.ollama.model, showToast]);
+
   const generateResponse = useCallback(async (
     messages: { role: 'user' | 'assistant' | 'system', content: string, images?: string[] }[],
     onStream?: (chunk: string) => void,
@@ -348,25 +367,6 @@ export function useOllama(
     await api.deleteModel(modelName);
     await checkConnection(); // Refresh the model list after deletion
   }, [api, checkConnection]);
-
-  const summarizeContent = useCallback(async (content: string): Promise<string> => {
-    if (!api) {
-      throw new Error('Ollama API not initialized for summarization.');
-    }
-    const summarizePrompt = `Please summarize the following text concisely, focusing on key information and facts. The summary should be no more than 2-3 sentences.\n\nText: """\n${content}\n"""\n\nSummary:`;
-    const messages = [{ role: 'user', content: summarizePrompt }];
-    try {
-      const response = await api.generateResponse(settings.ollama.model, messages);
-      console.log('Summarization response:', response);
-      const summary = response?.message?.content || response?.response || '';
-      console.log('Generated summary:', summary);
-      return summary;
-    } catch (error) {
-      console.error('Failed to summarize content:', error);
-      showToast('Failed to summarize content for memory.', 'error');
-      return content; // Fallback to original content if summarization fails
-    }
-  }, [api, settings.ollama.model, showToast]);
 
   const saveFact = useCallback(async (fact: string) => {
     if (!memoryService) {
