@@ -148,7 +148,7 @@ function App() {
     // Check if the message is a command to save a fact
     const saveFact = async (fact: string) => {
       try {
-        await memoryService.addMemory(fact, 'user');
+        await memoryService.addMemory(fact, 'fact');
         showToast('Fact saved to memories!', 'success');
       } catch (error) {
         console.error('Failed to save fact:', error);

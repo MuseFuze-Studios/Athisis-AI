@@ -16,6 +16,8 @@ import { AppSettings } from '../../types';
 import { OllamaModel } from '../../services/ollamaApi';
 import { promptApi, Prompt } from '../../services/promptApi';
 import { clsx } from 'clsx';
+import { Memory } from '../../types';
+import { MemoryService } from '../../services/memoryService';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -430,7 +432,7 @@ export function SettingsModal({
                       <div key={memory.id} className="glass p-4 rounded-2xl border border-white/10 flex justify-between items-start transition-glass">
                         <div>
                           <p className="text-xs text-gray-500 font-medium">{new Date(memory.timestamp).toLocaleString()} - {memory.type}</p>
-                          <p className="text-sm text-gray-300 mt-2 font-normal">{memory.content}</p>
+                          <p className="text-sm text-gray-300 mt-2 font-normal">{memory.text}</p>
                         </div>
                         <Button
                           variant="ghost"
