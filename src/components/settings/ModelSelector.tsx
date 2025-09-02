@@ -1,5 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Download, RefreshCw, Check, AlertCircle, Trash2 } from 'lucide-react';
+import Download from 'lucide-react/dist/esm/icons/download.js';
+import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw.js';
+import Check from 'lucide-react/dist/esm/icons/check.js';
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle.js';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2.js';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { OllamaModel } from '../../services/ollamaApi';

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Folder, File, ChevronRight, ChevronDown } from 'lucide-react';
+import Folder from 'lucide-react/dist/esm/icons/folder.js';
+import FileIcon from 'lucide-react/dist/esm/icons/file.js';
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right.js';
+import ChevronDown from 'lucide-react/dist/esm/icons/chevron-down.js';
 import { ProjectFile } from '../../types';
 import { clsx } from 'clsx';
 
@@ -76,7 +79,7 @@ export function FileExplorer({ onFileSelect, rootPath }: FileExplorerProps) {
             </span>
           )}
           <span className="mr-2 text-gray-400">
-            {isDirectory ? <Folder size={16} /> : <File size={16} />}
+            {isDirectory ? <Folder size={16} /> : <FileIcon size={16} />}
           </span>
           <span className="text-sm text-gray-300">{file.name}</span>
         </div>

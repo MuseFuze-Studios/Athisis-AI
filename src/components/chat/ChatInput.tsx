@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Code } from 'lucide-react';
+import Send from 'lucide-react/dist/esm/icons/send.js';
+import Paperclip from 'lucide-react/dist/esm/icons/paperclip.js';
+import Code from 'lucide-react/dist/esm/icons/code.js';
 import { Button } from '../ui/Button';
 import { clsx } from 'clsx';
 

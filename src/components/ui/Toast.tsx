@@ -1,6 +1,8 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle, Info, XCircle } from 'lucide-react';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle.js';
+import Info from 'lucide-react/dist/esm/icons/info.js';
+import XCircle from 'lucide-react/dist/esm/icons/x-circle.js';
 import { clsx } from 'clsx';
 
 export interface ToastMessage {

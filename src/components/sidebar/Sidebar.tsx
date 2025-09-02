@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChatHistory } from './ChatHistory';
 import { ChatSession } from '../../types';
-import { Settings } from 'lucide-react';
+import Settings from 'lucide-react/dist/esm/icons/settings.js';
 
 interface SidebarProps {
   isOpen: boolean;

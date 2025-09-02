@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot } from 'lucide-react';
+import Bot from 'lucide-react/dist/esm/icons/bot.js';
 
 interface LandingPageProps {
   onNewChat: () => void;
