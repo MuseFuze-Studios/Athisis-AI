@@ -1,35 +1,29 @@
-import initSqlJs, { Database } from 'sql.js';
-import LRU from 'lru-cache';
-
 export class ResponseCache {
-  private dbPromise: Promise<Database>;
-  private lru: LRU<string, string>;
+  private max: number;
+  private cache: Map<string, string>;
 
-  constructor(size = 50) {
-    this.dbPromise = initSqlJs().then(SQL => {
-      const db = new SQL.Database();
-      db.run('CREATE TABLE IF NOT EXISTS cache (key TEXT PRIMARY KEY, value TEXT)');
-      return db;
-    });
-    this.lru = new LRU({ max: size });
+  constructor(max = 50) {
+    this.max = max;
+    this.cache = new Map();
   }
 
   async get(key: string): Promise<string | null> {
-    const mem = this.lru.get(key);
-    if (mem) return mem;
-    const db = await this.dbPromise;
-    const res = db.exec('SELECT value FROM cache WHERE key = $key', { $key: key });
-    if (res.length > 0 && res[0].values.length > 0) {
-      const value = res[0].values[0][0] as string;
-      this.lru.set(key, value);
-      return value;
-    }
-    return null;
+    if (!this.cache.has(key)) return null;
+    const value = this.cache.get(key)!;
+    // Refresh key to mark as recently used
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
   }
 
   async set(key: string, value: string): Promise<void> {
-    const db = await this.dbPromise;
-    this.lru.set(key, value);
-    db.run('INSERT OR REPLACE INTO cache (key, value) VALUES ($key, $value)', { $key: key, $value: value });
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+    this.cache.set(key, value);
+    if (this.cache.size > this.max) {
+      const oldestKey = this.cache.keys().next().value as string;
+      this.cache.delete(oldestKey);
+    }
   }
 }
