@@ -44,7 +44,6 @@ export function useSettings() {
       const port = !loadedSettings.ollama.port || loadedSettings.ollama.port === 3000
         ? 11434
         : loadedSettings.ollama.port;
-
       loadedSettings = {
         ...loadedSettings,
         ollama: {
