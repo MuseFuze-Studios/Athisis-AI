@@ -159,16 +159,23 @@ function App() {
       const factToSave = content.substring('remember that '.length).trim();
       if (factToSave) {
         await saveFact(factToSave);
-        // Add the user's command to the chat history without sending to AI
+        // Add the user's command and an acknowledgement to the chat history without sending to AI
+        const timestamp = new Date();
         const userCommandMessage: Message = {
           id: Date.now().toString(),
           content: content,
           role: 'user',
-          timestamp: new Date(),
+          timestamp,
         };
-        setChatSessions(prev => prev.map(session => 
+        const acknowledgementMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: "Got it! I'll remember that.",
+          role: 'assistant',
+          timestamp,
+        };
+        setChatSessions(prev => prev.map(session =>
           session.id === activeChatSessionId
-            ? { ...session, messages: [...session.messages, userCommandMessage] }
+            ? { ...session, messages: [...session.messages, userCommandMessage, acknowledgementMessage] }
             : session
         ));
         return; // Stop further processing
