@@ -55,6 +55,16 @@ app.use('/ollama-api', createProxyMiddleware({
 app.use(express.json());
 
 const PROMPTS_FILE = path.join(__dirname, 'prompts.json');
+const metrics = [];
+
+app.post('/metrics', (req, res) => {
+  metrics.push({ ...req.body, timestamp: Date.now() });
+  res.status(204).send();
+});
+
+app.get('/metrics', (req, res) => {
+  res.json(metrics);
+});
 
 // Helper to read prompts from file
 const readPrompts = () => {
