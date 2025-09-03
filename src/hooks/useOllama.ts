@@ -5,7 +5,9 @@ import { promptApi } from '../services/promptApi';
 import { MemoryService } from '../services/memoryService';
 import { Memory } from '../types';
 import { ResponseCache } from '../services/cacheService';
-import { personalityService } from '../services/personalityService';
+import { sophieCore } from '../sophie/core';
+
+const SOPHIE_ENABLED = import.meta.env.VITE_SOPHIE_ENABLED !== 'false';
 
 export function useOllama(
   showToast: (message: string, type?: 'success' | 'info' | 'error', duration?: number) => void = () => {}
@@ -54,7 +56,7 @@ export function useOllama(
         newMemoryService.setOnMemoryAdded(memory => {
           const preview = memory.text.length > 60 ? `${memory.text.slice(0, 60)}...` : memory.text;
           showToast(`AI remembered: ${preview}`, 'info');
-          personalityService.evolveFromMemory(memory);
+          sophieCore.evolveFromMemory(memory);
         });
         console.log('MemoryService initialized successfully with embedding model:', settings.embeddingModel);
         console.log(`useOllama: Initial memories after service init: ${newMemoryService.getAllMemories().length}`);
@@ -132,7 +134,7 @@ export function useOllama(
     }
 
     let latestUserMessage = messages[messages.length - 1]?.content || '';
-    personalityService.recordInteraction(latestUserMessage);
+    sophieCore.recordInteraction(latestUserMessage);
     const lastUserMessageWithImage = messages.findLast(msg => msg.role === 'user' && msg.images && msg.images.length > 0);
 
     const modelToUse =
@@ -285,8 +287,10 @@ export function useOllama(
       systemPromptContent = 'You are a helpful AI assistant.';
     }
 
-    const personalityPrompt = personalityService.getSystemPrompt();
-    let finalSystemPrompt = personalityPrompt + '\n\n' + systemPromptContent + contextMemories;
+    const personalityPrompt = SOPHIE_ENABLED
+      ? sophieCore.getSystemPrompt(settings.mode || 'assistant', memories, settings)
+      : '';
+    let finalSystemPrompt = (personalityPrompt ? personalityPrompt + '\n\n' : '') + systemPromptContent + contextMemories;
     if (isDeepThinkingMode && refinedPath) {
       finalSystemPrompt += `\n\nBased on the following refined thought process, formulate your response. Ensure your output is clear, concise, non-repetitive, supported by evidence/examples where appropriate, and ends with a practical conclusion:\n"""\n${refinedPath}\n"""`;
     }

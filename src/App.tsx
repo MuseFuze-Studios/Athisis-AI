@@ -17,6 +17,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useToast } from './hooks/useToast'; // Import useToast
 import { useClipboard } from './hooks/useClipboard'; // Import useClipboard
 import { ModeSelector } from './components/chat/ModeSelector';
+import { SophieMode } from './types';
 import { Toast } from './components/ui/Toast'; // Import Toast component
 import { LandingPage } from './components/chat/LandingPage'; // Import LandingPage
 
@@ -57,9 +58,11 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
-  const [mode, setMode] = useState<'basic' | 'deep'>('basic');
-
   const { settings, updateSettings } = useSettings();
+  const [mode, setMode] = useState<SophieMode>(settings.mode || 'girlfriend');
+  useEffect(() => {
+    setMode(settings.mode || 'girlfriend');
+  }, [settings.mode]);
   const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
   const {
     models = [],
@@ -432,7 +435,13 @@ function App() {
           </div>
           
           <div className="flex items-center space-x-3">
-            <ModeSelector selectedMode={mode} onModeChange={setMode} />
+            <ModeSelector
+              selectedMode={mode}
+              onModeChange={m => {
+                setMode(m);
+                updateSettings({ mode: m });
+              }}
+            />
             <Button
               variant="ghost"
               size="sm"

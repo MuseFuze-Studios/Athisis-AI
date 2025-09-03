@@ -18,6 +18,8 @@ import { promptApi, Prompt } from '../../services/promptApi';
 import { clsx } from 'clsx';
 import { Memory } from '../../types';
 import { MemoryService } from '../../services/memoryService';
+import { PersonalitySliders } from './PersonalitySliders';
+import { MemoryViewer } from './MemoryViewer';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -224,8 +226,8 @@ export function SettingsModal({
           <button
             className={clsx(
               'px-6 py-4 text-sm font-medium rounded-t-2xl transition-glass relative',
-              activeTab === 'memories' 
-                ? 'text-blue-400 glass-subtle' 
+              activeTab === 'memories'
+                ? 'text-blue-400 glass-subtle'
                 : 'text-gray-400 hover:text-white glass-hover'
             )}
             onClick={() => setActiveTab('memories')}
@@ -238,8 +240,22 @@ export function SettingsModal({
           <button
             className={clsx(
               'px-6 py-4 text-sm font-medium rounded-t-2xl transition-glass relative',
-              activeTab === 'display' 
-                ? 'text-blue-400 glass-subtle' 
+              activeTab === 'personality'
+                ? 'text-blue-400 glass-subtle'
+                : 'text-gray-400 hover:text-white glass-hover'
+            )}
+            onClick={() => setActiveTab('personality')}
+          >
+            {activeTab === 'personality' && (
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-blue-400 rounded-full"></div>
+            )}
+            Personality
+          </button>
+          <button
+            className={clsx(
+              'px-6 py-4 text-sm font-medium rounded-t-2xl transition-glass relative',
+              activeTab === 'display'
+                ? 'text-blue-400 glass-subtle'
                 : 'text-gray-400 hover:text-white glass-hover'
             )}
             onClick={() => setActiveTab('display')}
@@ -450,6 +466,21 @@ export function SettingsModal({
                   </div>
                 )}
               </div>
+            </section>
+          )}
+
+          {/* Personality Configuration */}
+          {activeTab === 'personality' && (
+            <section>
+              <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
+                <div className="p-2 rounded-full glass glow-primary mr-3">
+                  <Bot size={18} className="text-pink-400" />
+                </div>
+                Personality
+              </h3>
+              <PersonalitySliders settings={settings} onUpdateSettings={onUpdateSettings} />
+              <h4 className="text-base font-medium text-gray-300 mt-8 mb-4">Memories</h4>
+              <MemoryViewer />
             </section>
           )}
 

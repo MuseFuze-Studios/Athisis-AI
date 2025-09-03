@@ -57,11 +57,20 @@ export interface Memory {
   confidence: number;
 }
 
+export type MoodState = 'happy' | 'flirty' | 'thoughtful' | 'supportive';
+
+export type SophieMode = 'assistant' | 'girlfriend' | 'deep';
+
 export interface Personality {
   name: string;
   tone: string;
   quirks: string[];
   interactionCount: number;
+  mood: MoodState;
+  affection: number;
+  playfulness: number;
+  directness: number;
+  intimacy: number;
 }
 
 export interface AppSettings {
@@ -76,6 +85,11 @@ export interface AppSettings {
   qualityPassEnabled?: boolean; // Enable response improver
   tldrEnabled?: boolean; // Show TL;DR summaries
   ragEnabled?: boolean; // Toggle retrieval augmentation
+  mode?: SophieMode;
+  affection?: number;
+  playfulness?: number;
+  directness?: number;
+  intimacy?: number;
 }
 
 export interface ClipboardItem {

@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist-test",
+    "allowImportingTsExtensions": false
+  },
+  "include": [
+    "src/sophie/**/*.ts",
+    "src/services/memoryService.ts",
+    "src/services/ollamaApi.ts",
+    "src/types/**/*.ts"
+  ]
+}

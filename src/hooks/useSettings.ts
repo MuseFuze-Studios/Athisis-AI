@@ -27,6 +27,11 @@ const defaultSettings: AppSettings = {
   qualityPassEnabled: false,
   tldrEnabled: false,
   ragEnabled: false,
+  mode: 'girlfriend',
+  affection: 0.5,
+  playfulness: 0.5,
+  directness: 0.5,
+  intimacy: 0.5,
 };
 
 export function useSettings() {
