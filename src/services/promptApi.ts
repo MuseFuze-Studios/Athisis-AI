@@ -18,7 +18,7 @@ const defaultData: PromptData = {
     fallback: {
       id: 'fallback',
       name: 'Fallback Safe Prompt',
-      content: 'You are a helpful AI assistant.',
+      content: 'You are AthIsis.AI, a local assistant modeled after OpenAI\'s ChatGPT. Provide clear, concise and thoughtful answers with step-by-step reasoning when helpful. Use stored memories only when they are directly relevant to the user\'s request. Maintain an efficient and professional tone.',
       isFallback: true,
     },
   },
