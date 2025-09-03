@@ -6,6 +6,7 @@ import { MemoryService } from '../services/memoryService';
 import { Memory } from '../types';
 import { ResponseCache } from '../services/cacheService';
 import { sophieCore } from '../sophie/core';
+import { applyGuardrails } from '../sophie/guardrails';
 
 const SOPHIE_ENABLED = import.meta.env.VITE_SOPHIE_ENABLED !== 'false';
 
@@ -55,7 +56,7 @@ export function useOllama(
         });
         newMemoryService.setOnMemoryAdded(memory => {
           const preview = memory.text.length > 60 ? `${memory.text.slice(0, 60)}...` : memory.text;
-          showToast(`AI remembered: ${preview}`, 'info');
+          showToast(`I remembered: ${preview}`, 'info');
           sophieCore.evolveFromMemory(memory);
         });
         console.log('MemoryService initialized successfully with embedding model:', settings.embeddingModel);
@@ -203,7 +204,7 @@ export function useOllama(
       setThinkingProcess("Generating multiple reasoning paths...");
       // Step 1: Generate multiple reasoning paths
       const multiPathPromptMessages = [
-        { role: 'system', content: `You are an AI assistant. Your task is to generate 2-3 distinct step-by-step internal thought processes or approaches for responding to a user query. Each approach should be clearly separated and offer a different perspective or method to solve the problem. Do not provide the final answer, only the reasoning paths. The user query is: ${latestUserMessage}` },
+        { role: 'system', content: `You are a helpful assistant. Your task is to generate 2-3 distinct step-by-step internal thought processes or approaches for responding to a user query. Each approach should be clearly separated and offer a different perspective or method to solve the problem. Do not provide the final answer, only the reasoning paths. The user query is: ${latestUserMessage}` },
         { role: 'user', content: latestUserMessage }
       ];
 
@@ -284,7 +285,7 @@ export function useOllama(
     } catch (error) {
       console.error(`Failed to fetch system prompt with ID ${systemPromptId}:`, error);
       // Fallback to a default system prompt if fetching fails
-      systemPromptContent = 'You are a helpful AI assistant.';
+      systemPromptContent = 'You are a helpful assistant.';
     }
 
     const personalityPrompt = SOPHIE_ENABLED
@@ -316,7 +317,7 @@ export function useOllama(
       const userMessage = messages.findLast(msg => msg.role === 'user')?.content || '';
       const aiResponse = finalResponse.response;
 
-      // Simple heuristic: if user message is a question/instruction and AI response is substantial
+      // Simple heuristic: if user message is a question/instruction and response is substantial
       const importantKeywords = ['how to', 'what is', 'explain', 'define', 'steps', 'guide', 'example', 'code', 'solution', 'remember', 'note', 'fact'];
       const isUserMessageImportant = importantKeywords.some(keyword => userMessage.toLowerCase().includes(keyword)) ||
                                      userMessage.toLowerCase().endsWith('?') ||
@@ -327,7 +328,7 @@ export function useOllama(
 
       if (isUserMessageImportant && isAiResponseSubstantial) {
         console.log('Attempting to summarize conversation for automatic memory...');
-        const conversationSummary = await summarizeContent(`User: ${userMessage}\nAI: ${aiResponse}`);
+        const conversationSummary = await summarizeContent(`User: ${userMessage}\nSophie: ${aiResponse}`);
         if (conversationSummary) {
           await memoryService.addMemory(conversationSummary, 'fact', { tags: ['auto'] }); // Store as fact memory
           console.log('Conversation summarized and successfully added to memory:', conversationSummary);
@@ -338,6 +339,9 @@ export function useOllama(
       }
     }
 
+    if (finalResponse && finalResponse.response) {
+      finalResponse.response = applyGuardrails(finalResponse.response);
+    }
     await cacheRef.current?.set(cacheKey, JSON.stringify(finalResponse));
     return finalResponse;
   }, [
@@ -356,7 +360,7 @@ export function useOllama(
     if (currentAbortController.current) {
       currentAbortController.current.abort();
       setIsLoading(false);
-      console.log('AI generation aborted.');
+      console.log('Response generation aborted.');
     }
   }, []);
 

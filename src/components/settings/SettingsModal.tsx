@@ -193,7 +193,7 @@ export function SettingsModal({
             {activeTab === 'models' && (
               <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-blue-400 rounded-full"></div>
             )}
-            AI Models
+            Models
           </button>
           <button
             className={clsx(
@@ -283,14 +283,14 @@ export function SettingsModal({
 
         {/* Content */}
         <div className="p-8 space-y-8">
-          {/* AI Model Configuration */}
+          {/* Model Configuration */}
           {activeTab === 'models' && (
             <section>
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center">
                 <div className="p-2 rounded-full glass glow-primary mr-3">
                   <Bot size={18} className="text-blue-400" />
                 </div>
-                AI Model Configuration
+                Model Configuration
               </h3>
               <div className="space-y-6">
                 <p className="text-sm text-gray-400 font-normal">
@@ -420,7 +420,7 @@ export function SettingsModal({
               </h3>
               <div className="space-y-6">
                 <p className="text-sm text-gray-400 font-normal">
-                  These are memories the AI has automatically stored to provide better context in future conversations.
+                  These are memories I've automatically stored to provide better context in future conversations.
                 </p>
                 <Input
                   label="Embedding Model"
@@ -576,7 +576,7 @@ export function SettingsModal({
                       label="Prompt Content"
                       value={newPromptContent}
                       onChange={(e) => setNewPromptContent(e.target.value)}
-                      placeholder="e.g., You are a helpful and friendly AI assistant."
+                      placeholder="e.g., You are a helpful and friendly companion."
                       textarea
                       rows={4}
                     />

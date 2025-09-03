@@ -59,7 +59,7 @@ export interface Memory {
 
 export type MoodState = 'happy' | 'flirty' | 'thoughtful' | 'supportive';
 
-export type SophieMode = 'assistant' | 'girlfriend' | 'deep';
+export type SophieMode = 'assistant' | 'companion' | 'deep';
 
 export interface Personality {
   name: string;

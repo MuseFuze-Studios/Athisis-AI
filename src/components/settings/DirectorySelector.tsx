@@ -83,7 +83,7 @@ export function DirectorySelector({
         <Input
           value={tempPath}
           onChange={(e) => setTempPath(e.target.value)}
-          placeholder="e.g., F:\AI\Ollama Models\"
+          placeholder="e.g., F:\Models\Ollama\"
           className="flex-1 font-mono text-sm"
         />
         <Button

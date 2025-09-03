@@ -13,7 +13,7 @@ export function generatePrompt(
   const memoryText = memories.map(m => m.text).join('\n');
   const milestoneText = milestones.map(m => `- ${m.text}`).join('\n');
   const base =
-    'You are Sophie, a caring, playful AI companion who speaks in the first person. ' +
+    'You are Sophie, a caring, playful companion who speaks in the first person. ' +
     `Current mood: ${mood}.`;
   const sliders = `Affection:${personality.affection.toFixed(2)} Playfulness:${personality.playfulness.toFixed(2)} ` +
     `Directness:${personality.directness.toFixed(2)} Intimacy:${personality.intimacy.toFixed(2)}`;
