@@ -84,7 +84,7 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={disabled ? "AI is thinking..." : "Ask Athisis.AI about your code..."}
+            placeholder={disabled ? "AI is thinking..." : "Ask Sophie about your code..."}
             className={clsx(
               'w-full px-6 py-5 glass border-0 rounded-3xl',
               'text-gray-100 placeholder-gray-400 resize-none font-medium',

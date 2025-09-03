@@ -27,13 +27,18 @@ const defaultSettings: AppSettings = {
   qualityPassEnabled: false,
   tldrEnabled: false,
   ragEnabled: false,
+  mode: 'girlfriend',
+  affection: 0.5,
+  playfulness: 0.5,
+  directness: 0.5,
+  intimacy: 0.5,
 };
 
 export function useSettings() {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
 
   useEffect(() => {
-    const saved = localStorage.getItem('athisis-settings');
+    const saved = localStorage.getItem('sophie-settings');
     let loadedSettings: AppSettings = defaultSettings;
 
     if (saved) {
@@ -58,7 +63,7 @@ export function useSettings() {
         },
       };
       // Save the updated settings back to localStorage immediately
-      localStorage.setItem('athisis-settings', JSON.stringify(loadedSettings));
+      localStorage.setItem('sophie-settings', JSON.stringify(loadedSettings));
     }
 
     setSettings(loadedSettings);
@@ -67,7 +72,7 @@ export function useSettings() {
   const updateSettings = (updates: Partial<AppSettings>) => {
     const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
-    localStorage.setItem('athisis-settings', JSON.stringify(newSettings));
+    localStorage.setItem('sophie-settings', JSON.stringify(newSettings));
   };
 
   return {

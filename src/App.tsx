@@ -17,6 +17,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { useToast } from './hooks/useToast'; // Import useToast
 import { useClipboard } from './hooks/useClipboard'; // Import useClipboard
 import { ModeSelector } from './components/chat/ModeSelector';
+import { SophieMode } from './types';
 import { Toast } from './components/ui/Toast'; // Import Toast component
 import { LandingPage } from './components/chat/LandingPage'; // Import LandingPage
 
@@ -26,7 +27,7 @@ const initialChatSession: ChatSession = {
   messages: [
     {
       id: '1',
-      content: "Hello! I'm Athisis.AI, your local AI coding assistant. I'm ready to connect to your Ollama instance and help you with code explanations, generation, refactoring, and more. Please configure your Ollama settings and select a model to get started.",
+      content: "Hi! I'm Sophie, your local AI coding assistant. I'm ready to connect to your Ollama instance and help you with code explanations, generation, refactoring, and more. Please configure your Ollama settings and select a model to get started.",
       role: 'assistant',
       timestamp: new Date(),
       type: 'text',
@@ -57,9 +58,11 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
-  const [mode, setMode] = useState<'basic' | 'deep'>('basic');
-
   const { settings, updateSettings } = useSettings();
+  const [mode, setMode] = useState<SophieMode>(settings.mode || 'girlfriend');
+  useEffect(() => {
+    setMode(settings.mode || 'girlfriend');
+  }, [settings.mode]);
   const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
   const {
     models = [],
@@ -271,11 +274,7 @@ function App() {
     setIsLoading(true);
 
     const conversationMessages = [
-      {
-        role: 'system',
-        content: 'You are a laid-back, casual, and conversational AI assistant. Be concise and to the point unless explicitly asked for more detail. Always be supportive of ambitious ideas, but ground them with practical, actionable steps. Blend creativity with exploration and realism in your suggestions. Engage like a collaborator, not just a tool. You can switch into a detailed and technical mode when the user requests it.'
-      },
-      ...messages, 
+      ...messages,
       userMessage
     ].map(msg => ({
       role: msg.role,
@@ -411,7 +410,7 @@ function App() {
               <div className="p-2 rounded-full glass glow-primary">
                 <Bot size={20} className="text-blue-400" />
               </div>
-              <h1 className="text-xl font-semibold text-white tracking-tight">Athisis.AI</h1>
+              <h1 className="text-xl font-semibold text-white tracking-tight">Sophie</h1>
               {isConnected ? (
                 <div className="flex items-center space-x-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50"></span>
@@ -436,7 +435,13 @@ function App() {
           </div>
           
           <div className="flex items-center space-x-3">
-            <ModeSelector selectedMode={mode} onModeChange={setMode} />
+            <ModeSelector
+              selectedMode={mode}
+              onModeChange={m => {
+                setMode(m);
+                updateSettings({ mode: m });
+              }}
+            />
             <Button
               variant="ghost"
               size="sm"

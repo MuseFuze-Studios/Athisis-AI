@@ -1,4 +1,4 @@
-import { OllamaAPI } from './ollamaApi';
+import { OllamaAPI } from './ollamaApi.js';
 import { Memory, MemoryType } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -22,7 +22,9 @@ export class MemoryService {
   private memories: Memory[] = [];
   private ollamaApi: OllamaAPI;
   private embeddingModel: string;
-  private readonly STORAGE_KEY = 'athisis-memories';
+  private readonly STORAGE_KEY = 'sophie-memories';
+  private readonly AUDIT_KEY = 'sophie-memory-audit';
+  private auditLog: { timestamp: number; action: string; id: string }[] = [];
   private onMemoryChange: (() => void) | null = null;
   private onMemoryAdded: ((memory: Memory) => void) | null = null;
   private readonly saveThreshold = 0.6;
@@ -84,6 +86,14 @@ export class MemoryService {
       console.error('Failed to load memories from localStorage:', error);
       this.memories = [];
     }
+    try {
+      const audit = localStorage.getItem(this.AUDIT_KEY);
+      if (audit) {
+        this.auditLog = JSON.parse(audit);
+      }
+    } catch {
+      this.auditLog = [];
+    }
     this.notify();
   }
 
@@ -93,6 +103,11 @@ export class MemoryService {
       console.log(`MemoryService: Saved ${this.memories.length} memories to localStorage.`);
     } catch (error) {
       console.error('Failed to save memories to localStorage:', error);
+    }
+    try {
+      localStorage.setItem(this.AUDIT_KEY, JSON.stringify(this.auditLog));
+    } catch {
+      /* ignore */
     }
     this.notify();
   }
@@ -117,6 +132,19 @@ export class MemoryService {
     const longevity = type === 'task' ? 0.3 : type === 'fact' ? 0.6 : 1;
     const score = 0.35 * intent + 0.2 * specificity + 0.2 * recurrence + 0.15 * recency + 0.1 * longevity;
     return score;
+  }
+
+  private log(action: string, id: string) {
+    this.auditLog.push({ timestamp: Date.now(), action, id });
+    try {
+      localStorage.setItem(this.AUDIT_KEY, JSON.stringify(this.auditLog));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  getAuditLog() {
+    return [...this.auditLog];
   }
 
   async addMemory(
@@ -149,6 +177,7 @@ export class MemoryService {
         existing.tags = Array.from(new Set([...(existing.tags || []), ...(options.tags || [])]));
         existing.entities = Array.from(new Set([...(existing.entities || []), ...(options.entities || [])]));
         existing.confidence = Math.max(existing.confidence, options.confidence ?? existing.confidence);
+        this.log('update', existing.id);
         this.saveMemories();
         return existing;
       }
@@ -168,6 +197,7 @@ export class MemoryService {
       };
       this.memories.push(newMemory);
       console.log(`MemoryService: Memory added to internal array. Current count: ${this.memories.length}`);
+      this.log('add', newMemory.id);
       this.saveMemories();
       console.log(`MemoryService: Successfully added and saved memory. Total memories: ${this.memories.length}`);
       if (this.onMemoryAdded) {
@@ -227,11 +257,13 @@ export class MemoryService {
 
   clearAllMemories() {
     this.memories = [];
+    this.log('clear', 'all');
     this.saveMemories();
   }
 
   deleteMemory(id: string) {
     this.memories = this.memories.filter(memory => memory.id !== id);
+    this.log('delete', id);
     this.saveMemories();
   }
 }

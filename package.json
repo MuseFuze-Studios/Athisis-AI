@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "prestart-all": "pip install -r python_service/requirements.txt",
     "start-all": "concurrently \"node server.cjs\" \"python python_service/app.py\" \"npm run dev\"",
-    "dev-all": "concurrently \"node server.cjs\" \"npm run dev\""
+    "dev-all": "concurrently \"node server.cjs\" \"npm run dev\"",
+    "test": "npx tsc -p tsconfig.test.json && mkdir -p dist-test/services/ollamaApi && cp dist-test/services/ollamaApi.js dist-test/services/ollamaApi/index.js && node --test dist-test/sophie/__tests__/*.test.js"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -23,15 +24,15 @@
     "express": "^4.19.2",
     "framer-motion": "^12.23.12",
     "http-proxy-middleware": "^3.0.5",
+    "lru-cache": "^11.0.0",
     "lucide-react": "^0.539.0",
     "prism-react-renderer": "^2.4.1",
     "prismjs": "^1.29.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hotkeys-hook": "^5.1.0",
-    "uuid": "^11.1.0",
-    "lru-cache": "^11.0.0",
-    "sql.js": "^1.10.2"
+    "sql.js": "^1.10.2",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
