@@ -27,7 +27,7 @@ const initialChatSession: ChatSession = {
   messages: [
     {
       id: '1',
-      content: "Hi! I'm Sophie, your local AI coding assistant. I'm ready to connect to your Ollama instance and help you with code explanations, generation, refactoring, and more. Please configure your Ollama settings and select a model to get started.",
+      content: "Hi! I'm Sophie, ready to connect to your Ollama instance and help you with code explanations, generation, refactoring, and more. Please configure your Ollama settings and select a model to get started.",
       role: 'assistant',
       timestamp: new Date(),
       type: 'text',
@@ -59,9 +59,9 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const { settings, updateSettings } = useSettings();
-  const [mode, setMode] = useState<SophieMode>(settings.mode || 'girlfriend');
+  const [mode, setMode] = useState<SophieMode>(settings.mode || 'companion');
   useEffect(() => {
-    setMode(settings.mode || 'girlfriend');
+    setMode(settings.mode || 'companion');
   }, [settings.mode]);
   const { toasts, showToast, dismissToast } = useToast(); // Initialize useToast
   const {
@@ -73,7 +73,7 @@ function App() {
     pullModel,
     abortGeneration,
     deleteModel, // New: Expose deleteModel from useOllama
-    thinkingProcess, // AI's internal thought process
+    thinkingProcess, // internal thought process
     memoryService, // Expose memoryService
     deleteMemory, // Expose deleteMemory
     memories, // Expose memories
@@ -162,7 +162,7 @@ function App() {
       const factToSave = content.substring('remember that '.length).trim();
       if (factToSave) {
         await saveFact(factToSave);
-        // Add the user's command and an acknowledgement to the chat history without sending to AI
+        // Add the user's command and an acknowledgement to the chat history without sending to the model
         const timestamp = new Date();
         const userCommandMessage: Message = {
           id: Date.now().toString(),
@@ -232,7 +232,7 @@ function App() {
       })
     );
 
-    // AI names the chat on first prompt
+    // The model names the chat on first prompt
     if (isNewEmptyChat && activeChatSession) {
       try {
         const newChatName = await generateChatName(fullPrompt);
@@ -281,7 +281,7 @@ function App() {
       content: String(msg.content), // Explicitly convert to string
       images: msg.images, // Pass images from message
     }));
-    console.log('Sending message to AI:', conversationMessages);
+    console.log('Sending message to model:', conversationMessages);
 
     try {
       const startTime = performance.now();
@@ -339,7 +339,7 @@ function App() {
       }
       
     } catch (error) {
-      console.error('Failed to get AI response:', error);
+      console.error('Failed to get response:', error);
       
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),

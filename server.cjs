@@ -76,7 +76,7 @@ const readPrompts = () => {
                 'fallback': {
                     id: 'fallback',
                     name: 'Fallback Safe Prompt',
-                    content: 'You are a helpful AI assistant.',
+                    content: 'You are a helpful assistant.',
                     isFallback: true
                 }
             }

@@ -21,9 +21,9 @@ export function ModeSelector({ selectedMode, onModeChange }: ModeSelectorProps) 
         Assistant
       </button>
       <button
-        onClick={() => onModeChange('girlfriend')}
+        onClick={() => onModeChange('companion')}
         className={`px-3 py-1 text-sm rounded-md ${
-          selectedMode === 'girlfriend'
+          selectedMode === 'companion'
             ? 'glass-strong glow-secondary text-white font-medium'
             : 'text-gray-400 hover:text-gray-300 font-medium'
         }`}

@@ -12,7 +12,7 @@ export function LandingPage({ onNewChat }: LandingPageProps) {
         <Bot size={64} className="text-blue-400 mb-6 animate-pulse" />
         <h2 className="text-3xl font-bold text-white mb-4">Welcome to Sophie</h2>
         <p className="text-gray-300 text-lg mb-6">
-          Your local AI coding assistant. Start a new conversation or select an existing one from the sidebar.
+          Your local coding companion. Start a new conversation or select an existing one from the sidebar.
         </p>
         <button
           onClick={onNewChat}

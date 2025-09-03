@@ -7,3 +7,6 @@ and prompt generation. These modules are orchestrated by `SophieCore` which expo
 
 Settings control mode and personality sliders which influence the prompt. Memories are
 managed by `MemoryService` with an audit log for transparency.
+
+A guardrails module sanitizes responses, removing meta references and redirecting
+explicit requests with a gentle fade‑to‑black.

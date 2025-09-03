@@ -27,7 +27,7 @@ const defaultSettings: AppSettings = {
   qualityPassEnabled: false,
   tldrEnabled: false,
   ragEnabled: false,
-  mode: 'girlfriend',
+  mode: 'companion',
   affection: 0.5,
   playfulness: 0.5,
   directness: 0.5,

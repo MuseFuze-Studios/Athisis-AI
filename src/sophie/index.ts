@@ -4,3 +4,4 @@ export * from './moods.js';
 export * from './quirks.js';
 export * from './relationshipArc.js';
 export * from './prompts.js';
+export * from './guardrails.js';
