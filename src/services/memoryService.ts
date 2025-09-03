@@ -22,7 +22,7 @@ export class MemoryService {
   private memories: Memory[] = [];
   private ollamaApi: OllamaAPI;
   private embeddingModel: string;
-  private readonly STORAGE_KEY = 'athisis-memories';
+  private readonly STORAGE_KEY = 'sophie-memories';
   private onMemoryChange: (() => void) | null = null;
   private onMemoryAdded: ((memory: Memory) => void) | null = null;
   private readonly saveThreshold = 0.6;
