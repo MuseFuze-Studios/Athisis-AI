@@ -28,7 +28,7 @@ export function ModeSelector({ selectedMode, onModeChange }: ModeSelectorProps) 
             : 'text-gray-400 hover:text-gray-300 font-medium'
         }`}
       >
-        Girlfriend
+        Sophie Basic
       </button>
       <button
         onClick={() => onModeChange('deep')}
