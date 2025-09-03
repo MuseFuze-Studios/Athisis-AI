@@ -16,7 +16,7 @@ export function ModeSelector({ selectedMode, onModeChange }: ModeSelectorProps) 
             : 'text-gray-400 hover:text-gray-300 font-medium'
         }`}
       >
-        Athisis Basic
+        Sophie Basic
       </button>
       <button
         onClick={() => onModeChange('deep')}
@@ -26,7 +26,7 @@ export function ModeSelector({ selectedMode, onModeChange }: ModeSelectorProps) 
             : 'text-gray-400 hover:text-gray-300 font-medium'
         }`}
       >
-        Athisis Deep Thinking
+        Sophie Deep Thinking
       </button>
     </div>
   );

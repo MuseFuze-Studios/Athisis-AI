@@ -26,7 +26,7 @@ const initialChatSession: ChatSession = {
   messages: [
     {
       id: '1',
-      content: "Hello! I'm Athisis.AI, your local AI coding assistant. I'm ready to connect to your Ollama instance and help you with code explanations, generation, refactoring, and more. Please configure your Ollama settings and select a model to get started.",
+      content: "Hi! I'm Sophie, your local AI coding assistant. I'm ready to connect to your Ollama instance and help you with code explanations, generation, refactoring, and more. Please configure your Ollama settings and select a model to get started.",
       role: 'assistant',
       timestamp: new Date(),
       type: 'text',
@@ -271,11 +271,7 @@ function App() {
     setIsLoading(true);
 
     const conversationMessages = [
-      {
-        role: 'system',
-        content: 'You are a laid-back, casual, and conversational AI assistant. Be concise and to the point unless explicitly asked for more detail. Always be supportive of ambitious ideas, but ground them with practical, actionable steps. Blend creativity with exploration and realism in your suggestions. Engage like a collaborator, not just a tool. You can switch into a detailed and technical mode when the user requests it.'
-      },
-      ...messages, 
+      ...messages,
       userMessage
     ].map(msg => ({
       role: msg.role,
@@ -411,7 +407,7 @@ function App() {
               <div className="p-2 rounded-full glass glow-primary">
                 <Bot size={20} className="text-blue-400" />
               </div>
-              <h1 className="text-xl font-semibold text-white tracking-tight">Athisis.AI</h1>
+              <h1 className="text-xl font-semibold text-white tracking-tight">Sophie</h1>
               {isConnected ? (
                 <div className="flex items-center space-x-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-lg shadow-emerald-400/50"></span>

@@ -57,6 +57,13 @@ export interface Memory {
   confidence: number;
 }
 
+export interface Personality {
+  name: string;
+  tone: string;
+  quirks: string[];
+  interactionCount: number;
+}
+
 export interface AppSettings {
   ollama: OllamaConfig;
   promptId: string;

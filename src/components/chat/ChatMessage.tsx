@@ -53,7 +53,7 @@ export function ChatMessage({ message, showLineNumbers, isLatestMessage, thinkin
         <div className="flex-1">
         <div className="flex items-center justify-between mb-3">
           <div className="font-medium text-white flex items-center">
-            {isUser ? 'You' : 'Athisis.AI'}
+            {isUser ? 'You' : 'Sophie'}
             {typeof message.score === 'number' && (
               <span className="ml-2 text-xs text-emerald-400 glass px-2 py-0.5 rounded-full">{message.score}</span>
             )}
