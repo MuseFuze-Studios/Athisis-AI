@@ -183,7 +183,7 @@ export function useOllama(
     let contextMemories = '';
     if (memoryService && latestUserMessage.length > 10) { // Only retrieve if user message is substantial
       try {
-        const similarMemories = await memoryService.retrieveSimilarMemories(latestUserMessage, 3); // Retrieve top 3
+        const similarMemories = await memoryService.retrieveSimilarMemories(latestUserMessage, 3, 0.75); // Only include highly relevant memories
         if (similarMemories.length > 0) {
           contextMemories = '\n\nRelevant past conversations:\n' +
             similarMemories.map(mem => `[${mem.type}]: ${mem.text}`).join('\n');

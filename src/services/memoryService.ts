@@ -180,7 +180,7 @@ export class MemoryService {
     }
   }
 
-  async retrieveSimilarMemories(query: string, limit: number = 3): Promise<Memory[]> {
+  async retrieveSimilarMemories(query: string, limit: number = 3, minScore: number = 0.75): Promise<Memory[]> {
     const trimmed = query.trim();
     if (!trimmed) return [];
     if (this.memories.length === 0) return [];
@@ -197,11 +197,14 @@ export class MemoryService {
         return { memory, score: finalScore };
       });
 
-      scoredMemories.sort((a, b) => b.score - a.score);
+      const relevant = scoredMemories
+        .filter(item => item.score >= minScore)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map(item => item.memory);
 
-      const result = scoredMemories.slice(0, limit).map(item => item.memory);
-      result.forEach(mem => this.reinforceMemory(mem.id));
-      return result;
+      relevant.forEach(mem => this.reinforceMemory(mem.id));
+      return relevant;
     } catch (error) {
       console.error('Failed to retrieve similar memories:', error);
       return [];
