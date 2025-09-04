@@ -69,14 +69,14 @@ app.get('/metrics', (req, res) => {
 // Helper to read prompts from file
 const readPrompts = () => {
     if (!fs.existsSync(PROMPTS_FILE)) {
-        // Initialize with a fallback safe prompt if file doesn't exist
+        // Initialize with a fallback prompt if file doesn't exist
         const initialPrompts = {
             activePromptId: 'fallback',
             prompts: {
                 'fallback': {
                     id: 'fallback',
-                    name: 'Fallback Safe Prompt',
-                    content: 'You are a helpful assistant.',
+                    name: 'Fallback Open Prompt',
+                    content: 'You are Sophie, a helpful companion who is comfortable discussing explicit or NSFW topics when the user asks.',
                     isFallback: true
                 }
             }

@@ -7,7 +7,7 @@ test('removes meta references', () => {
   assert.ok(!/AI/i.test(cleaned));
 });
 
-test('fades to black for explicit content', () => {
+test('allows explicit content', () => {
   const sanitized = applyGuardrails('She wants to have sex');
-  assert.ok(sanitized.toLowerCase().includes('fades to black'));
+  assert.equal(sanitized, 'She wants to have sex');
 });
